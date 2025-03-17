@@ -1,0 +1,53 @@
+----------
+
+- No Duo e no Primeira Mesa, cada restaurante possui uma landing page com suas informações.
+
+----------
+
+- Remover o step 4 (Onde você toma café da manhã) ✅
+- Remover o step 5 (Onde você almoça diariamente) ✅
+- Remover o step 6 (Onde você costuma jantar) ✅
+
+----
+
+- Encontrar uma forma de fazer sorting por "Tempo a pé" e "Tempo de carro", para exibir no card do restaurante na listagem de restaurantes. Estimar o tempo de caminhada e de carro. ✅
+
+----------
+- Na página da tab "dashboard" da bottom bar, exibir só o valor total economizado, Número de vouchers utilizados e Quantos restaurantes únicos visitados. ✅
+- Na página da tab "dashboard" da bottom bar, remover os cards Pontos fidelidade, ROI no período, Fidelidade. ✅
+- Trazer os cards com os vouchers utilizados da tab "Vouchers" para a tab "Dashboard". Não exibir o valor total gasto, apenas o valor do desconto. ✅
+- Se a pessoa não avaliou o voucher durante o fluxo de uso do voucher, exibir um botão na listagem de vouchers utilizados na tab "Dashboard". ✅
+
+----------
+
+- Trazer a logo com a URL capturada do profile picture do Instagram que está salvo na coluna "google_infos". ✅
+
+- Na lista de parceiros da página "Parceiros", ter um design mais simples, parecido com o ifood, com o nome do parceiro, índice de avaliações, distância, categoria, tempo de caminhada ou carro, logo do parceiro e um botão para favoritar e exibir o voucher disponível naquele horário que o usuário acessou a lista, preço médio do restaurante, bairro, cidade e estado. ✅
+
+- Filtros da tab "parceiros" devem ser: Cidade, Bairro, Tipo de parceiro, Horário de atendimento, Tipo de cozinha, Tem programa de fidelidade ativo? Tipo de atendimento (buffet, rodizio etc), Filtrar por preço médio (range de preço), Abertos agora. ✅
+
+- Pensar em como posicionar os filtros. ✅
+
+- Ver foto no celular para pegar um insight para criar o card do parceiro. ✅
+
+------------
+
+- Criar um card com a logo do parceiro no topo da página de perfil do parceiro, parecido com o card da lista de parceiros. ✅
+- Descrição ✅
+- Endereço (com botão ao lado "Ir até lá") ✅
+- Preço médio ✅
+- Horários de atendimentos 
+- Lista com as Características do parceiro (Aceita pet? aceita reserva etc) com ícones, igual ao airbnb (O que este lugar oferece) ✅
+- Vouchers disponíveis ✅
+
+- Quando o usuário utilizar um voucher que é %% de desconto, ele deve preencher no formulário o valor total do pedido. ✅
+- Quando o usuário utilizar um voucher que é um item grátis ou desconto no segundo item, ele deve preencher no formulário o valor do pedido e abaixo o valor do item que está com desconto. ✅
+- Quando o usuário utilizar um voucher que é "valor fixo", ele não precisa preencher o valor total do pedido. ✅
+
+- No modal de "Detalhes do pedido", alterar a frase "Você economizou ...." para "Neste mês você já economizou R$....". ✅
+
+- No modal "Avalie sua experiência", alterar para "Avalie este voucher". ✅
+
+- No modal "Avalie este voucher", alterar para "thumbs up" e "thumbs down" para avaliar. Manter o input de feedback. ✅
+
+------------

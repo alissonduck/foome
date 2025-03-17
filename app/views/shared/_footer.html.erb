@@ -1,0 +1,17 @@
+<footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between flex-wrap">
+      <div class="flex-shrink-0">
+        <p class="text-sm text-foome-gray">
+          &copy; <%= Date.current.year %> Foome. Todos os direitos reservados.
+        </p>
+      </div>
+      
+      <div class="flex space-x-6">
+        <%= link_to "Termos", terms_path, class: "text-sm text-foome-gray hover:text-foome-primary" %>
+        <%= link_to "Privacidade", privacy_path, class: "text-sm text-foome-gray hover:text-foome-primary" %>
+        <%= link_to "Contato", contact_path, class: "text-sm text-foome-gray hover:text-foome-primary" %>
+      </div>
+    </div>
+  </div>
+</footer> 

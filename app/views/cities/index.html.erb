@@ -1,0 +1,54 @@
+<div class="max-w-7xl mx-auto px-4">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-foome-dark mb-4">Cidades</h1>
+    
+    <% if params[:state_id].present? %>
+      <% state = State.find_by(id: params[:state_id]) %>
+      <% if state %>
+        <p class="text-foome-gray-dark mb-6">Cidades do estado de <%= state.name %> (<%= state.abbreviation %>).</p>
+        <div class="flex items-center mb-6">
+          <%= link_to states_path, class: "text-foome-gray hover:text-[#ff4b4b] flex items-center" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Voltar para Estados
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-foome-gray-dark mb-6">Lista de cidades do Brasil.</p>
+      
+      <%= render 'search_form' %>
+    <% end %>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+    <% if params[:query].present? %>
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <p class="text-sm text-foome-gray">Resultados da pesquisa por: <span class="font-medium"><%= params[:query] %></span></p>
+      </div>
+    <% end %>
+    
+    <div class="divide-y divide-gray-200">
+      <% if @cities.any? %>
+        <% @cities.each do |city| %>
+          <div class="p-4 hover:bg-gray-50">
+            <%= link_to city_path(city), class: "flex items-center justify-between" do %>
+              <div>
+                <h3 class="text-lg font-medium text-foome-dark"><%= city.name %></h3>
+                <p class="text-sm text-foome-gray">Estado: <%= city.state.name %> (<%= city.state.abbreviation %>)</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="p-6 text-center">
+          <p class="text-foome-gray">Nenhuma cidade encontrada.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

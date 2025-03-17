@@ -1,0 +1,47 @@
+<div class="max-w-7xl mx-auto px-4">
+  <div class="flex items-center mb-6">
+    <%= link_to states_path, class: "text-foome-gray hover:text-foome-primary flex items-center" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Voltar para Estados
+    <% end %>
+  </div>
+
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-foome-dark mb-2"><%= @state.name %></h1>
+        <p class="text-foome-gray-dark">
+          <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-md font-medium text-sm mr-2"><%= @state.abbreviation %></span>
+          <%= pluralize(@cities.count, 'cidade', 'cidades') %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-8">
+    <div class="p-4 border-b border-gray-200 bg-gray-50">
+      <h2 class="text-lg font-medium text-foome-dark">Cidades</h2>
+    </div>
+
+    <% if @cities.any? %>
+      <div class="divide-y divide-gray-200">
+        <% @cities.each do |city| %>
+          <div class="p-4 hover:bg-gray-50">
+            <%= link_to city_path(city), class: "flex items-center justify-between" do %>
+              <h3 class="text-base font-medium text-foome-dark"><%= city.name %></h3>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="p-6 text-center">
+        <p class="text-foome-gray">Nenhuma cidade encontrada para este estado.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

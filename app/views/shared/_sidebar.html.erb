@@ -1,0 +1,21 @@
+<aside class="w-64 bg-white shadow-sm border-r border-gray-200 hidden md:block" 
+       data-controller="sidebar">
+  <div class="h-full flex flex-col">
+    <!-- Cabeçalho do sidebar -->
+    <div class="p-4 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-foome-dark">Menu principal</h2>
+    </div>
+    
+    <!-- Links de navegação -->
+    <nav class="flex-1 overflow-y-auto p-4">
+      <ul class="space-y-1">
+        <%= render "shared/sidebar_links" %>
+      </ul>
+    </nav>
+    
+    <!-- Rodapé do sidebar (opcional) -->
+    <div class="p-4 border-t border-gray-200">
+      <!-- Conteúdo do rodapé... -->
+    </div>
+  </div>
+</aside> 

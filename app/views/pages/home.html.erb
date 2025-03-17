@@ -1,0 +1,111 @@
+<div class="max-w-7xl mx-auto px-4">
+  <div class="text-center mt-6 mb-8">
+    <div class="flex justify-center items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff4b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils-crossed">
+        <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
+        <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
+        <path d="m2.1 21.8 6.4-6.3"/>
+        <path d="m19 5-7 7"/>
+      </svg>
+      <span class="ml-2 text-2xl font-semibold text-[#ff4b4b]">foome</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+    <!-- Para estabelecimentos -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
+      <div class="p-6">
+        <div class="flex justify-center items-center h-14 w-14 rounded-full bg-red-50 mb-5 mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils-crossed">
+            <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
+            <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
+            <path d="m2.1 21.8 6.4-6.3"/>
+            <path d="m19 5-7 7"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-foome-dark mb-2 text-center">Para estabelecimentos</h2>
+        <p class="text-foome-gray-dark mb-6 text-center text-sm">Aumente suas vendas e alcance novos clientes. Com o foome, seu estabelecimento terá acesso a uma rede de empresas e funcionários em busca de refeições de qualidade.</p>
+        
+        <div class="mb-3">
+          <%= link_to "#", class: "w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#ff4b4b] hover:bg-[#ff4b4b]/90" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+              <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
+              <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
+              <path d="m2.1 21.8 6.4-6.3"/>
+              <path d="m19 5-7 7"/>
+            </svg>
+            Entrar como estabelecimento
+          <% end %>
+        </div>
+        
+        <div>
+          <%= link_to "Seja um estabelecimento parceiro", "#", class: "inline-block w-full text-center py-2 text-sm text-foome-gray-dark hover:text-[#ff4b4b]" %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Para empresas -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
+      <div class="p-6">
+        <div class="flex justify-center items-center h-14 w-14 rounded-full bg-red-50 mb-5 mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building">
+            <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+            <path d="M9 22v-4h6v4"/>
+            <path d="M8 6h.01"/>
+            <path d="M16 6h.01"/>
+            <path d="M12 6h.01"/>
+            <path d="M12 10h.01"/>
+            <path d="M12 14h.01"/>
+            <path d="M16 10h.01"/>
+            <path d="M16 14h.01"/>
+            <path d="M8 10h.01"/>
+            <path d="M8 14h.01"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-foome-dark mb-2 text-center">Para empresas</h2>
+        <p class="text-foome-gray-dark mb-6 text-center text-sm">Ofereça benefícios alimentares diferenciados para seus funcionários. Com o foome, sua empresa tem acesso a uma rede de estabelecimentos parceiros de qualidade.</p>
+        
+        <div class="mb-3">
+          <%= link_to "#", class: "w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#ff4b4b] hover:bg-[#ff4b4b]/90" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+              <rect width="16" height="20" x="4" y="2" rx="2" ry="2"/>
+              <path d="M9 22v-4h6v4"/>
+              <path d="M8 6h.01"/>
+              <path d="M16 6h.01"/>
+              <path d="M12 6h.01"/>
+              <path d="M12 10h.01"/>
+              <path d="M12 14h.01"/>
+              <path d="M16 10h.01"/>
+              <path d="M16 14h.01"/>
+              <path d="M8 10h.01"/>
+              <path d="M8 14h.01"/>
+            </svg>
+            Entrar como empresa
+          <% end %>
+        </div>
+        
+        <div>
+          <%= link_to "Mate a foome dos seus funcionários", "#", class: "inline-block w-full text-center py-2 text-sm text-foome-gray-dark hover:text-[#ff4b4b]" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mb-12">
+    <h2 class="text-lg font-semibold text-foome-dark mb-5">Já é usuário foome? Baixe o aplicativo</h2>
+    <div class="flex justify-center space-x-4">
+      <%= link_to "#", class: "inline-flex items-center px-6 py-2 border border-gray-300 shadow-sm rounded-md text-sm font-medium text-foome-dark bg-white hover:bg-gray-50" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.72 1.77-1.63 3.54-2.53 4.08ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.89 4.27-3.74 4.25Z"/>
+        </svg>
+        App Store
+      <% end %>
+      <%= link_to "#", class: "inline-flex items-center px-6 py-2 border border-gray-300 shadow-sm rounded-md text-sm font-medium text-foome-dark bg-white hover:bg-gray-50" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3.609 1.814L13.792 12L3.609 22.186C3.24 21.811 3 21.301 3 20.729V3.271C3 2.699 3.24 2.189 3.609 1.814ZM14.523 12.731L16.948 14.269L5.865 20.728L14.523 12.731ZM16.95 9.731L14.524 11.269L5.867 3.272L16.95 9.731ZM17.409 10.395L19.801 11.714C20.567 12.136 20.567 13.864 19.801 14.286L17.413 15.604L14.939 14.037L17.409 12.5V10.395Z"/>
+        </svg>
+        Play Store
+      <% end %>
+    </div>
+  </div>
+</div> 

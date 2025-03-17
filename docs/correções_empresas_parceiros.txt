@@ -1,0 +1,193 @@
+- Remover número de funcionários. ✅
+- Transformar o input Categoria do estabelecimento em select múltiplo com tags. ✅
+- Quando o usuário selecionar Características ou Tipo de cozinha, devemos remover do input as opções que já foram selecionadas anteriormente. ✅
+
+Step 0 - Cadastro de estabelecimento ✅
+
+- Nome
+- Email
+- WhatsApp
+- Senha
+- Confirmar senha
+
+Step 1 - Dados do estabelecimento ✅
+- Nome do estabelecimento
+- CNPJ
+- Cidade
+- Bairro
+
+Step 2 - Informações do estabelecimento ✅
+
+- Categoria do estabelecimento
+- Número de cadeiras no estabelecimento
+- Características
+- Tipo de cozinha
+
+Step 3 - Dias de atendimento ✅
+- Dias de atendimento, cadastrando uma vez só e selecionando os dias que o estabelecimento atende.
+
+Step 4 - Integração com Maps ✅
+- Selecionar o estabelecimento no Google Maps
+
+
+Step 5 - Integração com Instagram ✅
+- Selecionar o perfil do Instagram
+
+
+- Adicionar buffer kilo ou livre (2 inputs) ✅
+- Alterar tipo de atendimento antes do horário (primeiro item do form) ✅
+- Quando for Livre ou Rodízio, devemos ter apenas 1 input de preço ✅
+- Quando for Kilo, devemos ter 1 input de preço ✅
+- Quando for Kilo ou Livre, devemos ter 2 inputs de preço (1 para o preço do Kilo e outro para o preço do Livre) ✅
+- Quando for a La carte ou Delivery, devemos ter 2 inputs de preço (Inicial / final) ✅
+- Alterar o nome do inpiut "Média de refeições servidas" para "Média de clientes servidos". ✅
+
+- Alterar a estrutura do formulário do step 3 (dias de atendimento) ✅
+1) ao invés de cadastrar tipos de atendimento e horário para cada dia, devemos ter apenas um formulário de cadastr cadastro com inputs de tipos de atendimento, horários etc, onde o usuário seleciona os dias daquele atendimento.
+
+--------------------------------
+
+- Vouchers só podem ser editados se não houver nenhum cliente ou voucher utilizado associado a eles. ✅
+
+- Duplicar vouchers ✅
+
+- Vouchers só podem ser desabilitados após 24h da ação de desabilitar, para não prejudicar nenhum cliente. ✅
+
+Listagem de vouchers: ✅
+
+- ID do voucher
+- Horário de uso
+- Nome do voucher
+- Nome do cliente
+- Nome da empresa
+- Telefone do cliente
+- Valor gasto (Permite editar)
+- Desconto
+- Valor final
+- Botões Validar/Invalidar. (Deseja validar este voucher? Deseja invalidar este voucher?)
+
+- Deixar o restaurante cadastrar apenas 1 voucher por horário de habilitação do voucher.
+
+- Novo menu "Clientes" com listagem de clientes e botão de cadastro. ✅
+1) Nome do cliente
+2) Nome da empresa do cliente
+3) Telefone do cliente
+4) Número de vezes que o cliente utilizou um voucher
+5) Valor gasto
+
+- Página de "Detalhes do cliente" com: ❌
+
+1) informações de cadastro (nome, email, telefone, empresa, data de nascimento, cargo)
+2) métricas de uso de vouchers (número de vezes que o cliente utilizou um voucher, valor gasto, desconto, valor final)
+
+- Modal alterar senha do usuário do estabelecimento
+- Alterar perfil (Nome, email, whatsapp)
+
+--------
+
+Fluxos e páginas de empresas:
+
+- Página de login ✅
+
+- Página de cadastro multi step ✅
+1) Step 0 - Email e cnpj
+2) Step 1 - Dados pessoais (Nome, telefone, senha e confirmar senha)
+3) Step 2 - Informações da empresa (Nome da empresa, número de funcionários, cidade, bairro), (Regime de trabalho (Presencial, Híbrido e Remoto)
+
+Informações para pedir numa toolbar.
+- URL do LinkedIn
+- URL do Site
+- Tem refeitório ou não?
+- Cadastro dos endereços dos escritórios
+- Possui filiais ou faz parte de uma holding ou franquias?
+- Quais outros benefícios a empresa oferece? (Select Múltiplo)
+
+- Página para recuperar senha ✅
+
+- Dashboard da empresa ✅
+a) Filtros por período selecionado, por usuário, por sede, por equipe
+1) ROI (Desconto total / valor investido)
+2) Usuários ativos (status ativo)
+3) Usuário ativado (usuário utilizou no mínimo 1 vez no período selecionado)
+4) Usuário engajado (usuário utilizou no mínimo 4 vezes por mês)
+5) Número de vouchers utilizados no período selecionado
+6) Valor de desconto total recebido no período selecionado
+7) Desconto médio por usuário
+
+- Cadastro e edição de usuários: ✅
+1) Nome completo
+2) Email
+3) Telefone
+4) Cargo
+5) Equipe
+6) Data de nascimento
+7) Matrícula interna
+8) Status (Ativo, Inativo)
+9) Cidade
+10) Bairro
+
+- Cadastro e edição de equipes: ✅
+1) Nome da equipe
+2) Gestor
+3) Status (Ativo, Inativo)
+
+- Cadastro edição de sedes (Offices) ✅
+1) Nome da sede
+2) Cidade
+3) Bairro
+4) Google Infos
+5) Endereço (Logradouro, Número, Completo)
+6) CEP
+7) Active? (True/False)
+
+- Pensar na feature de billing e trial
+
+1) Trial de 7 dias para até 5 usuários cadastrados em Curitiba.
+2) Caso a empresa faça um downsell (reduza o número de usuários) ou upsell (compre mais usuários), os valores atualizados deverão ser refletidos na próxima fatura.
+3) O uso da ferramenta deve pré-paga, ou seja, o cliente faz o trial e após o trial ele deve selecionar o plano com o número de usuários (funcionários) e fazer o pagamento via cartão de crédito ou pix.
+4) O cliente pode cancelar o plano a qualquer momento, mas o período já pago não será reembolsado.
+
+Tabela Invoices
+1) ID do invoice
+2) ID da empresa
+3) Período de faturamento
+4) Valor total
+5) Imposto
+6) Número de usuários pagos neste invoice
+7) Data de faturamento
+8) Status (Pendente, Pago, Cancelado)
+9) Data de pagamento
+10) Data de cancelamento
+11) ID do plano
+
+Tabela Plans
+1) ID do plano
+2) Nome do plano
+3) Descrição do plano
+4) Valor do plano
+5) Número de usuários
+6) Status (Ativo, Inativo)
+7) Valor por usuário
+
+
+
+
+--------------------------------
+
+- Cadastrar cidades com mais de 300.000 habitantes (André vai me passar a lista)
+- Alterar o input de cidade para busca e select com as cidades cadastradas.
+- Se um restaurante não está em Curitiba e Região Metropolitana e se cadastrar, após o cadastro, onboarding, login e cadastro de vouchers, devemos exibir uma mensagem de waitlist.
+- Desativar empresas fora de Curitiba que estejam em WaitList.
+
+Fluxo de cadastro da empresa:
+
+- Trazer o input de cidade para o step 0, abaixo do input de cnpj.
+- Remover o input "Nome do escritório" do step 3. Preencher o nome do escritório automaticamente como "Matriz".
+
+- Criar um Step 4 que deverá ser um fluxo de billing, onde o usuário deverá escolher o número de funcionários e devemos exibir o valor por funcionário, valor total, aceitar os termos e clicar em "Pagar", onde devemos redirecion-lo para o Asaas.
+
+Fluxo pós login:
+
+- Cadastro de escritórios.
+- Cadastro de funcionários (Subir planilha).
+- Criar uma tela de empty state de onboarding caso o usuário não tenha funcionários e equipes cadastradas.
