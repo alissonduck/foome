@@ -1,6 +1,7 @@
 class Company::RegistrationsController < ApplicationController
   layout "company_register"
-  before_action :set_company, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4, :complete ]
+  before_action :validate_session_data, only: [ :step_2, :save_step_2, :step_3, :save_step_3 ]
+  before_action :set_company, only: [ :step_4, :complete ]
   before_action :redirect_if_completed, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4, :complete ]
 
   def new
@@ -80,9 +81,17 @@ class Company::RegistrationsController < ApplicationController
       return
     end
 
+    # Verificar se ainda temos o email na sessão
+    if session[:employee_email].blank?
+      flash.now[:alert] = "Email não encontrado. Por favor, inicie o cadastro novamente."
+      redirect_to company_register_path
+      return
+    end
+
     # Criar a empresa com os dados coletados até agora
     @company = Company.new(
       name: params[:company][:name],
+      email: session[:employee_email], # Usar o email do funcionário como email da empresa inicialmente
       cnpj: session[:company_cnpj],
       employee_count: params[:company][:employee_count],
       work_regime: params[:company][:work_regime]
@@ -117,6 +126,13 @@ class Company::RegistrationsController < ApplicationController
       return
     end
 
+    # Verificar dados da sessão
+    if session[:employee_name].blank? || session[:employee_email].blank? || session[:employee_password].blank?
+      Rails.logger.error("Dados do administrador ausentes: name=#{session[:employee_name]}, email=#{session[:employee_email]}")
+      redirect_to company_registrations_step_2_path, alert: "Dados do administrador ausentes. Por favor, preencha-os novamente."
+      return
+    end
+
     # Criar o escritório
     office = @company.offices.build(office_params)
 
@@ -129,9 +145,12 @@ class Company::RegistrationsController < ApplicationController
         password: session[:employee_password],
         company: @company,
         office: office,
-        admin: true, # Marcar como administrador
+        role: "admin", # Usar role em vez de admin:true
+        role_name: "Administrador",
         active: true
       )
+
+      Rails.logger.info("Criando administrador: #{@admin.attributes.inspect}")
 
       if @admin.save
         # Marcar cadastro como completo
@@ -147,6 +166,7 @@ class Company::RegistrationsController < ApplicationController
         redirect_to company_dashboard_path, notice: "Cadastro finalizado com sucesso! Bem-vindo(a) ao Foome."
       else
         # Se não conseguir criar o admin, excluir a empresa e o escritório para evitar inconsistências
+        Rails.logger.error("Erro ao criar admin: #{@admin.errors.full_messages}")
         office.destroy
         @company.destroy
         flash.now[:alert] = @admin.errors.full_messages.join(", ")
@@ -160,11 +180,37 @@ class Company::RegistrationsController < ApplicationController
 
   private
 
+  def validate_session_data
+    # Verificar se os dados básicos da sessão ainda existem
+    required_keys = [ :employee_email, :company_cnpj, :office_city_id ]
+
+    if step_2_or_above? && (required_keys.any? { |key| session[key].blank? })
+      redirect_to company_register_path, alert: "Sessão expirada. Por favor, inicie o cadastro novamente."
+      return
+    end
+
+    # Verificar dados do administrador a partir do step 3
+    if step_3_or_above?
+      admin_keys = [ :employee_name, :employee_password ]
+      if admin_keys.any? { |key| session[key].blank? }
+        redirect_to company_registrations_step_2_path, alert: "Dados do administrador ausentes. Por favor, preencha-os novamente."
+        nil
+      end
+    end
+  end
+
+  def step_2_or_above?
+    action_name.in?([ "step_2", "save_step_2", "step_3", "save_step_3", "step_4", "complete" ])
+  end
+
+  def step_3_or_above?
+    action_name.in?([ "step_3", "save_step_3", "step_4", "complete" ])
+  end
+
   def set_company
     @company = Company.find_by(id: session[:company_id])
 
-    # Se for antes da etapa 3, ainda não temos a company criada
-    unless @company || action_name.in?([ "step_2", "save_step_2" ])
+    unless @company
       redirect_to company_register_path, alert: "Sessão expirada. Por favor, inicie o cadastro novamente."
     end
   end
