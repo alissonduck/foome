@@ -1,0 +1,82 @@
+<% content_for :wizard_steps do %>
+  <%= render partial: 'wizard_steps', locals: { current_step: 3 } %>
+<% end %>
+
+<h1 class="text-2xl font-bold text-center mb-2">Dados da empresa</h1>
+<p class="text-gray-600 text-center mb-6">Informe os dados da sua empresa</p>
+
+<%= form_with url: company_registrations_step_3_path, method: :patch, class: "space-y-4" do |form| %>
+  <div>
+    <%= form.label :company_name, "Nome da empresa", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field "company[name]", placeholder: "Digite o nome da empresa", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]" %>
+  </div>
+  
+  <div>
+    <%= form.label :company_employee_count, "Número de funcionários", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <div class="relative">
+      <%= form.select "company[employee_count]", 
+        [
+          ["1-10", "1-10"],
+          ["11-50", "11-50"],
+          ["51-100", "51-100"],
+          ["101-500", "101-500"],
+          ["501-1000", "501-1000"],
+          ["1000+", "1000+"]
+        ],
+        { prompt: "Selecione a quantidade" },
+        { class: "w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b] appearance-none" }
+      %>
+      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    </div>
+  </div>
+  
+  <div>
+    <%= form.label :company_work_regime, "Regime de trabalho predominante", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <div class="space-y-2">
+      <div class="flex items-center">
+        <%= form.radio_button "company[work_regime]", "presencial", class: "h-4 w-4 text-[#ff4b4b] focus:ring-[#ff4b4b]" %>
+        <%= form.label :company_work_regime_presencial, "Presencial", class: "ml-2 text-sm text-gray-700" %>
+      </div>
+      
+      <div class="flex items-center">
+        <%= form.radio_button "company[work_regime]", "hibrido", class: "h-4 w-4 text-[#ff4b4b] focus:ring-[#ff4b4b]" %>
+        <%= form.label :company_work_regime_hibrido, "Híbrido", class: "ml-2 text-sm text-gray-700" %>
+      </div>
+      
+      <div class="flex items-center">
+        <%= form.radio_button "company[work_regime]", "remoto", class: "h-4 w-4 text-[#ff4b4b] focus:ring-[#ff4b4b]" %>
+        <%= form.label :company_work_regime_remoto, "Remoto", class: "ml-2 text-sm text-gray-700" %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="pt-4 flex space-x-4">
+    <%= link_to "Voltar", company_registrations_step_2_path, class: "flex-1 flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-200" %>
+    
+    <%= form.submit "Continuar", class: "flex-1 bg-[#ff4b4b] text-white py-2 px-4 rounded hover:bg-[#ff4b4b]/90 transition duration-200" %>
+  </div>
+<% end %>
+
+<div class="mt-4">
+  <div class="relative">
+    <div class="absolute inset-0 flex items-center">
+      <div class="w-full border-t border-gray-300"></div>
+    </div>
+    <div class="relative flex justify-center text-sm">
+      <span class="px-2 bg-white text-gray-500">ou</span>
+    </div>
+  </div>
+  
+  <div class="mt-6">
+    <button type="button" class="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+      <svg class="w-5 h-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84"></path>
+      </svg>
+      Entrar com Google
+    </button>
+  </div>
+</div>

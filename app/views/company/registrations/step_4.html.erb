@@ -1,0 +1,47 @@
+<% content_for :wizard_steps do %>
+  <%= render partial: 'wizard_steps', locals: { current_step: 4 } %>
+<% end %>
+
+<h1 class="text-2xl font-bold text-center mb-2">Dados do escritório</h1>
+<p class="text-gray-600 text-center mb-6">Informe os dados de localização da sua empresa</p>
+
+<%= form_with url: company_registrations_complete_path, method: :patch, class: "space-y-4" do |form| %>
+  <div>
+    <%= form.label :office_zip_code, "CEP", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field "office[zip_code]", placeholder: "00000-000", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]", data: { mask: "cep" } %>
+  </div>
+  
+  <div>
+    <%= form.label :office_number, "Número", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field "office[number]", placeholder: "123", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]" %>
+  </div>
+  
+  <div>
+    <%= form.label :office_city_id, "Cidade", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <div class="relative">
+      <%= form.collection_select "office[city_id]", City.all, :id, :name, 
+          { prompt: "Selecione a cidade", selected: @selected_city_id }, 
+          { class: "w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b] appearance-none", disabled: @selected_city_id.present? } %>
+      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    </div>
+    <% if @selected_city_id.present? %>
+      <%= form.hidden_field "office[city_id]", value: @selected_city_id %>
+      <p class="mt-1 text-xs text-gray-500">A cidade foi selecionada no primeiro passo do cadastro.</p>
+    <% end %>
+  </div>
+  
+  <div>
+    <%= form.label :office_neighborhood, "Bairro", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field "office[neighborhood]", placeholder: "Centro", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]" %>
+  </div>
+  
+  <div class="pt-4 flex space-x-4">
+    <%= link_to "Voltar", company_registrations_step_3_path, class: "flex-1 flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-200" %>
+    
+    <%= form.submit "Finalizar cadastro", class: "flex-1 bg-[#ff4b4b] text-white py-2 px-4 rounded hover:bg-[#ff4b4b]/90 transition duration-200" %>
+  </div>
+<% end %>

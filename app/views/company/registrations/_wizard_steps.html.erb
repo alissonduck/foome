@@ -1,0 +1,49 @@
+<%
+  current_step = local_assigns[:current_step] || 1
+%>
+
+<!-- Steps do wizard de cadastro de empresa -->
+<div class="mb-8">
+  <div class="flex justify-between items-center">
+    <!-- Step 1 -->
+    <div class="flex flex-col items-center">
+      <div class="<%= current_step >= 1 ? 'bg-[#ff4b4b] text-white' : 'bg-gray-200 text-gray-500' %> h-8 w-8 rounded-full flex items-center justify-center font-semibold">
+        1
+      </div>
+      <div class="text-xs text-gray-500 mt-1">Início</div>
+    </div>
+
+    <!-- Connector 1-2 -->
+    <div class="flex-1 h-px <%= current_step > 1 ? 'bg-[#ff4b4b]' : 'bg-gray-200' %> mx-1"></div>
+    
+    <!-- Step 2 -->
+    <div class="flex flex-col items-center">
+      <div class="<%= current_step >= 2 ? 'bg-[#ff4b4b] text-white' : 'bg-gray-200 text-gray-500' %> h-8 w-8 rounded-full flex items-center justify-center font-semibold">
+        2
+      </div>
+      <div class="text-xs text-gray-500 mt-1">Usuário</div>
+    </div>
+
+    <!-- Connector 2-3 -->
+    <div class="flex-1 h-px <%= current_step > 2 ? 'bg-[#ff4b4b]' : 'bg-gray-200' %> mx-1"></div>
+    
+    <!-- Step 3 -->
+    <div class="flex flex-col items-center">
+      <div class="<%= current_step >= 3 ? 'bg-[#ff4b4b] text-white' : 'bg-gray-200 text-gray-500' %> h-8 w-8 rounded-full flex items-center justify-center font-semibold">
+        3
+      </div>
+      <div class="text-xs text-gray-500 mt-1">Empresa</div>
+    </div>
+
+    <!-- Connector 3-4 -->
+    <div class="flex-1 h-px <%= current_step > 3 ? 'bg-[#ff4b4b]' : 'bg-gray-200' %> mx-1"></div>
+    
+    <!-- Step 4 -->
+    <div class="flex flex-col items-center">
+      <div class="<%= current_step >= 4 ? 'bg-[#ff4b4b] text-white' : 'bg-gray-200 text-gray-500' %> h-8 w-8 rounded-full flex items-center justify-center font-semibold">
+        4
+      </div>
+      <div class="text-xs text-gray-500 mt-1">Endereço</div>
+    </div>
+  </div>
+</div> 

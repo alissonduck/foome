@@ -16,6 +16,43 @@ Rails.application.routes.draw do
   get "privacy", to: "pages#privacy", as: :privacy
   get "contact", to: "pages#contact", as: :contact
 
+  # Devise
+  devise_for :employees, path: "employees", controllers: {
+    sessions: "employees/sessions",
+    registrations: "employees/registrations",
+    passwords: "employees/passwords"
+  }
+
+  # Company Namespace
+  namespace :company do
+    # Dashboard
+    get "dashboard", to: "dashboards#index", as: :dashboard
+
+    # Login para área de empresas
+    get "login", to: "sessions#new", as: :login
+    post "login", to: "sessions#create"
+    delete "logout", to: "sessions#destroy", as: :logout
+
+    # Registro de empresas (wizard)
+    get "register", to: "registrations#new", as: :register
+    post "register", to: "registrations#create"
+    get "register/step_2", to: "registrations#step_2", as: :registrations_step_2
+    patch "register/step_2", to: "registrations#save_step_2"
+    get "register/step_3", to: "registrations#step_3", as: :registrations_step_3
+    patch "register/step_3", to: "registrations#save_step_3"
+    get "register/step_4", to: "registrations#step_4", as: :registrations_step_4
+    patch "register/complete", to: "registrations#complete", as: :registrations_complete
+
+    # CRUD de funcionários
+    resources :employees
+
+    # CRUD de times
+    resources :teams
+
+    # CRUD de escritórios
+    resources :offices
+  end
+
   # Rotas para States
   resources :states, only: [ :index, :show ] do
     get "by_abbreviation/:abbreviation", on: :collection, to: "states#by_abbreviation", as: :by_abbreviation

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Foome - Cadastro de Empresa</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <!-- jQuery e jQuery Mask Plugin para máscaras de formulário -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    <div class="bg-white shadow-sm py-4">
+      <div class="container mx-auto px-4">
+        <div class="flex justify-center">
+          <%= link_to root_path do %>
+            <%= image_tag "logo.png", alt: "Foome", class: "h-10" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+      <div class="max-w-md mx-auto">
+        <!-- Visualização de etapas do wizard -->
+        <%= yield :wizard_steps %>
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
+          <% if flash[:notice] %>
+            <div class="mb-4 p-4 bg-green-50 rounded-md border border-green-200 text-green-700">
+              <%= flash[:notice] %>
+            </div>
+          <% end %>
+          
+          <% if flash[:alert] %>
+            <div class="mb-4 p-4 bg-red-50 rounded-md border border-red-200 text-red-700">
+              <%= flash[:alert] %>
+            </div>
+          <% end %>
+          
+          <%= yield %>
+        </div>
+      </div>
+    </main>
+
+    <footer class="py-6 bg-white border-t border-gray-200 mt-auto">
+      <div class="container mx-auto px-4">
+        <div class="text-center text-sm text-gray-500">
+          <p>&copy; <%= Date.today.year %> Foome. Todos os direitos reservados.</p>
+          <div class="mt-2 space-x-4">
+            <%= link_to "Termos de Uso", terms_path, class: "hover:text-gray-700" %>
+            <%= link_to "Política de Privacidade", privacy_path, class: "hover:text-gray-700" %>
+            <%= link_to "Contato", contact_path, class: "hover:text-gray-700" %>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html> 

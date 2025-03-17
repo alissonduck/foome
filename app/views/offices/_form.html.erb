@@ -1,0 +1,67 @@
+<%= form_with(model: office, class: "contents") do |form| %>
+  <% if office.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(office.errors.count, "error") %> prohibited this office from being saved:</h2>
+
+      <ul class="list-disc ml-6">
+        <% office.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :company_id %>
+    <%= form.text_field :company_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:company_id].none?, "border-red-400 focus:outline-red-600": office.errors[:company_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :city_id %>
+    <%= form.text_field :city_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:city_id].none?, "border-red-400 focus:outline-red-600": office.errors[:city_id].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:name].none?, "border-red-400 focus:outline-red-600": office.errors[:name].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :address %>
+    <%= form.text_field :address, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:address].none?, "border-red-400 focus:outline-red-600": office.errors[:address].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :zip_code %>
+    <%= form.text_field :zip_code, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:zip_code].none?, "border-red-400 focus:outline-red-600": office.errors[:zip_code].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :number %>
+    <%= form.text_field :number, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:number].none?, "border-red-400 focus:outline-red-600": office.errors[:number].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :complement %>
+    <%= form.text_field :complement, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:complement].none?, "border-red-400 focus:outline-red-600": office.errors[:complement].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :neighborhood %>
+    <%= form.text_field :neighborhood, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:neighborhood].none?, "border-red-400 focus:outline-red-600": office.errors[:neighborhood].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :google_infos %>
+    <%= form.text_field :google_infos, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": office.errors[:google_infos].none?, "border-red-400 focus:outline-red-600": office.errors[:google_infos].any?}] %>
+  </div>
+
+  <div class="my-5 flex items-center gap-2">
+    <%= form.label :active %>
+    <%= form.checkbox :active, class: ["block shadow-sm rounded-md border order-first h-5 w-5", {"border-gray-400 focus:outline-blue-600": office.errors[:active].none?, "border-red-400 focus:outline-red-600": office.errors[:active].any?}] %>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>
