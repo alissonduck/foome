@@ -1,5 +1,5 @@
 class PagesController < ApplicationController
   def home
-    # Página inicial
+    @home_data = PageService.get_home_page_data
   end
 end

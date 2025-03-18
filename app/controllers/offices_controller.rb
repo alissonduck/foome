@@ -3,7 +3,7 @@ class OfficesController < ApplicationController
 
   # GET /offices or /offices.json
   def index
-    @offices = Office.all
+    @offices = OfficeService.list_offices
   end
 
   # GET /offices/1 or /offices/1.json
@@ -21,11 +21,12 @@ class OfficesController < ApplicationController
 
   # POST /offices or /offices.json
   def create
-    @office = Office.new(office_params)
+    result = OfficeService.create_office(office_params)
+    @office = result[:office]
 
     respond_to do |format|
-      if @office.save
-        format.html { redirect_to @office, notice: "Office was successfully created." }
+      if result[:success]
+        format.html { redirect_to @office, notice: "Escritório criado com sucesso." }
         format.json { render :show, status: :created, location: @office }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -36,9 +37,11 @@ class OfficesController < ApplicationController
 
   # PATCH/PUT /offices/1 or /offices/1.json
   def update
+    result = OfficeService.update_office(@office, office_params)
+
     respond_to do |format|
-      if @office.update(office_params)
-        format.html { redirect_to @office, notice: "Office was successfully updated." }
+      if result[:success]
+        format.html { redirect_to @office, notice: "Escritório atualizado com sucesso." }
         format.json { render :show, status: :ok, location: @office }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -49,22 +52,32 @@ class OfficesController < ApplicationController
 
   # DELETE /offices/1 or /offices/1.json
   def destroy
-    @office.destroy!
+    result = OfficeService.destroy_office(@office)
 
     respond_to do |format|
-      format.html { redirect_to offices_path, status: :see_other, notice: "Office was successfully destroyed." }
-      format.json { head :no_content }
+      if result[:success]
+        format.html { redirect_to offices_path, status: :see_other, notice: "Escritório removido com sucesso." }
+        format.json { head :no_content }
+      else
+        format.html { redirect_to @office, alert: "Erro ao remover escritório: #{ErrorHandlerService.format_operation_errors(result)}" }
+        format.json { render json: result[:errors], status: :unprocessable_entity }
+      end
     end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_office
-      @office = Office.find(params.expect(:id))
+      @office = OfficeService.find_office(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      respond_to do |format|
+        format.html { redirect_to offices_path, alert: "Escritório não encontrado." }
+        format.json { render json: { error: "Escritório não encontrado" }, status: :not_found }
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def office_params
-      params.expect(office: [ :company_id, :city_id, :name, :address, :zip_code, :number, :complement, :neighborhood, :google_infos, :active ])
+      params.require(:office).permit(:company_id, :city_id, :name, :address, :zip_code, :number, :complement, :neighborhood, :google_infos, :active)
     end
 end

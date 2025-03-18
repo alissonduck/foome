@@ -391,7 +391,6 @@ class Company::RegistrationsController < ApplicationController
 
       if existing_employee
         Rails.logger.info("Email #{email} já está registrado em empresa com onboarding completo")
-        company = existing_employee.company
         redirect_to "/company/login", notice: "Você já possui uma conta registrada. Por favor, faça login."
         nil
       end

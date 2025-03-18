@@ -3,7 +3,7 @@ class CompaniesController < ApplicationController
 
   # GET /companies or /companies.json
   def index
-    @companies = Company.all
+    @companies = CompanyService.list_companies
   end
 
   # GET /companies/1 or /companies/1.json
@@ -21,11 +21,12 @@ class CompaniesController < ApplicationController
 
   # POST /companies or /companies.json
   def create
-    @company = Company.new(company_params)
+    result = CompanyService.create_company(company_params)
+    @company = result[:company]
 
     respond_to do |format|
-      if @company.save
-        format.html { redirect_to @company, notice: "Company was successfully created." }
+      if result[:success]
+        format.html { redirect_to @company, notice: "Empresa criada com sucesso." }
         format.json { render :show, status: :created, location: @company }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -36,9 +37,11 @@ class CompaniesController < ApplicationController
 
   # PATCH/PUT /companies/1 or /companies/1.json
   def update
+    result = CompanyService.update_company(@company, company_params)
+
     respond_to do |format|
-      if @company.update(company_params)
-        format.html { redirect_to @company, notice: "Company was successfully updated." }
+      if result[:success]
+        format.html { redirect_to @company, notice: "Empresa atualizada com sucesso." }
         format.json { render :show, status: :ok, location: @company }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -49,18 +52,28 @@ class CompaniesController < ApplicationController
 
   # DELETE /companies/1 or /companies/1.json
   def destroy
-    @company.destroy!
+    result = CompanyService.destroy_company(@company)
 
     respond_to do |format|
-      format.html { redirect_to companies_path, status: :see_other, notice: "Company was successfully destroyed." }
-      format.json { head :no_content }
+      if result[:success]
+        format.html { redirect_to companies_path, status: :see_other, notice: "Empresa removida com sucesso." }
+        format.json { head :no_content }
+      else
+        format.html { redirect_to @company, alert: "Erro ao remover empresa: #{ErrorHandlerService.format_operation_errors(result)}" }
+        format.json { render json: result[:errors], status: :unprocessable_entity }
+      end
     end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_company
-      @company = Company.find(params.expect(:id))
+      @company = CompanyService.find_company(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      respond_to do |format|
+        format.html { redirect_to companies_path, alert: "Empresa não encontrada." }
+        format.json { render json: { error: "Empresa não encontrada" }, status: :not_found }
+      end
     end
 
     # Only allow a list of trusted parameters through.

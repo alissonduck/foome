@@ -1,11 +1,7 @@
 class CitiesController < ApplicationController
   # GET /cities
   def index
-    @cities = if params[:state_id].present?
-                City.where(state_id: params[:state_id]).order(:name)
-    else
-                City.all.includes(:state).order(:name)
-    end
+    @cities = CityService.list_cities(params[:state_id])
 
     respond_to do |format|
       format.html
@@ -15,7 +11,7 @@ class CitiesController < ApplicationController
 
   # GET /cities/:id
   def show
-    @city = City.find(params[:id])
+    @city = CityService.find_city(params[:id])
 
     respond_to do |format|
       format.html
@@ -25,11 +21,7 @@ class CitiesController < ApplicationController
 
   # GET /cities/search
   def search
-    query = params[:query].to_s.downcase
-    @cities = City.where("LOWER(name) LIKE ?", "%#{query}%")
-                  .includes(:state)
-                  .order(:name)
-                  .limit(10)
+    @cities = CityService.search_cities(params[:query])
 
     respond_to do |format|
       format.html { render :index }

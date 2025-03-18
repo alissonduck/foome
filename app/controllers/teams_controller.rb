@@ -3,7 +3,7 @@ class TeamsController < ApplicationController
 
   # GET /teams or /teams.json
   def index
-    @teams = Team.all
+    @teams = TeamService.list_teams
   end
 
   # GET /teams/1 or /teams/1.json
@@ -21,11 +21,12 @@ class TeamsController < ApplicationController
 
   # POST /teams or /teams.json
   def create
-    @team = Team.new(team_params)
+    result = TeamService.create_team(team_params)
+    @team = result[:team]
 
     respond_to do |format|
-      if @team.save
-        format.html { redirect_to @team, notice: "Team was successfully created." }
+      if result[:success]
+        format.html { redirect_to @team, notice: "Equipe criada com sucesso." }
         format.json { render :show, status: :created, location: @team }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -36,9 +37,11 @@ class TeamsController < ApplicationController
 
   # PATCH/PUT /teams/1 or /teams/1.json
   def update
+    result = TeamService.update_team(@team, team_params)
+
     respond_to do |format|
-      if @team.update(team_params)
-        format.html { redirect_to @team, notice: "Team was successfully updated." }
+      if result[:success]
+        format.html { redirect_to @team, notice: "Equipe atualizada com sucesso." }
         format.json { render :show, status: :ok, location: @team }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -49,22 +52,32 @@ class TeamsController < ApplicationController
 
   # DELETE /teams/1 or /teams/1.json
   def destroy
-    @team.destroy!
+    result = TeamService.destroy_team(@team)
 
     respond_to do |format|
-      format.html { redirect_to teams_path, status: :see_other, notice: "Team was successfully destroyed." }
-      format.json { head :no_content }
+      if result[:success]
+        format.html { redirect_to teams_path, status: :see_other, notice: "Equipe removida com sucesso." }
+        format.json { head :no_content }
+      else
+        format.html { redirect_to @team, alert: "Erro ao remover equipe: #{ErrorHandlerService.format_operation_errors(result)}" }
+        format.json { render json: result[:errors], status: :unprocessable_entity }
+      end
     end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_team
-      @team = Team.find(params.expect(:id))
+      @team = TeamService.find_team(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      respond_to do |format|
+        format.html { redirect_to teams_path, alert: "Equipe não encontrada." }
+        format.json { render json: { error: "Equipe não encontrada" }, status: :not_found }
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def team_params
-      params.expect(team: [ :company_id, :name, :manager_id, :active ])
+      params.require(:team).permit(:company_id, :name, :manager_id, :active)
     end
 end

@@ -1,7 +1,7 @@
 class StatesController < ApplicationController
   # GET /states
   def index
-    @states = State.all.order(:name)
+    @states = StateService.list_states
 
     respond_to do |format|
       format.html
@@ -11,8 +11,8 @@ class StatesController < ApplicationController
 
   # GET /states/:id
   def show
-    @state = State.find(params[:id])
-    @cities = @state.cities.order(:name)
+    @state = StateService.find_state(params[:id])
+    @cities = StateService.cities_for_state(@state)
 
     respond_to do |format|
       format.html
@@ -22,17 +22,19 @@ class StatesController < ApplicationController
 
   # GET /states/by_abbreviation/:abbreviation
   def by_abbreviation
-    @state = State.find_by!(abbreviation: params[:abbreviation].upcase)
-    @cities = @state.cities.order(:name)
+    begin
+      @state = StateService.find_by_abbreviation(params[:abbreviation])
+      @cities = StateService.cities_for_state(@state)
 
-    respond_to do |format|
-      format.html { render :show }
-      format.json { render json: { state: @state, cities: @cities } }
-    end
-  rescue ActiveRecord::RecordNotFound
-    respond_to do |format|
-      format.html { redirect_to states_path, alert: "Estado não encontrado." }
-      format.json { render json: { error: "Estado não encontrado" }, status: :not_found }
+      respond_to do |format|
+        format.html { render :show }
+        format.json { render json: { state: @state, cities: @cities } }
+      end
+    rescue ActiveRecord::RecordNotFound
+      respond_to do |format|
+        format.html { redirect_to states_path, alert: "Estado não encontrado." }
+        format.json { render json: { error: "Estado não encontrado" }, status: :not_found }
+      end
     end
   end
 end
