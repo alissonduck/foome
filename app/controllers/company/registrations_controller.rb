@@ -1,123 +1,123 @@
 class Company::RegistrationsController < ApplicationController
+  # Controller responsável pelo processo de registro de empresas em etapas
+  # Gerencia o fluxo de cadastro de empresas, administradores e escritórios
+
   layout "company_register"
   before_action :validate_session_data, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4 ]
   before_action :set_company, only: [ :step_4, :complete ]
   before_action :redirect_if_completed, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4, :complete ]
 
+  # GET /company/register
+  # Exibe o formulário da primeira etapa do registro
   def new
     # Etapa 1 - Email, CNPJ e Cidade
     # Nesta etapa, apenas coletamos informações para uso posterior
   end
 
+  # POST /company/register
+  # Processa a primeira etapa do registro
   def create
-    # Processar etapa 1
-    # Armazenar os dados na sessão para uso posterior
-    session[:employee_email] = params[:employee][:email]
-    session[:company_cnpj] = params[:company][:cnpj]
-    session[:office_city_id] = params[:office][:city_id]
+    # Processar etapa 1 - Coletar email, CNPJ, cidade e aceite dos termos
+    step_params = {
+      employee_email: params[:employee][:email],
+      company_cnpj: params[:company][:cnpj],
+      office_city_id: params[:office][:city_id],
+      terms_accepted: params[:company][:terms_accepted]
+    }
 
-    # Validar os campos básicos antes de prosseguir
-    @errors = []
-    @errors << "Email é obrigatório" if session[:employee_email].blank?
-    @errors << "CNPJ é obrigatório" if session[:company_cnpj].blank?
-    @errors << "Cidade é obrigatória" if session[:office_city_id].blank?
+    # Validar os dados da etapa 1
+    result = CompanyRegistrationService.validate_step_1(step_params)
 
-    if @errors.any?
-      flash.now[:alert] = @errors.join(", ")
+    if result[:success]
+      # Armazenar os dados na sessão
+      SessionManagerService.store_step_1(session, step_params)
+      redirect_to company_registrations_step_2_path
+    else
+      flash.now[:alert] = ErrorHandlerService.format_error_array(result[:errors])
       render :new, status: :unprocessable_entity
-      return
     end
-
-    redirect_to company_registrations_step_2_path
   end
 
+  # GET /company/registrations/step-2
+  # Exibe o formulário da segunda etapa do registro
   def step_2
     # Etapa 2 - Dados do administrador (nome, telefone, senha)
     Rails.logger.info("Iniciando step_2 - Dados da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
   end
 
+  # PATCH /company/registrations/step-2
+  # Processa a segunda etapa do registro
   def save_step_2
-    # Processar etapa 2
-    # Validar manualmente as senhas para dar feedback antes de salvar
-    if params[:employee][:password] != params[:employee][:password_confirmation]
-      flash.now[:alert] = "As senhas não coincidem"
+    # Processar etapa 2 - Coletar dados do administrador
+    step_params = {
+      name: params[:employee][:name],
+      phone: params[:employee][:phone],
+      password: params[:employee][:password],
+      password_confirmation: params[:employee][:password_confirmation]
+    }
+
+    # Validar os dados da etapa 2
+    result = CompanyRegistrationService.validate_step_2(step_params)
+
+    if result[:success]
+      # Armazenar os dados na sessão
+      SessionManagerService.store_step_2(session, step_params)
+      redirect_to company_registrations_step_3_path
+    else
+      flash.now[:alert] = ErrorHandlerService.format_error_array(result[:errors])
       render :step_2, status: :unprocessable_entity
-      return
     end
-
-    # Validar campos obrigatórios
-    @errors = []
-    @errors << "Nome completo é obrigatório" if params[:employee][:name].blank?
-    @errors << "Senha é obrigatória" if params[:employee][:password].blank?
-
-    if @errors.any?
-      flash.now[:alert] = @errors.join(", ")
-      render :step_2, status: :unprocessable_entity
-      return
-    end
-
-    # Armazenar dados do administrador na sessão
-    session[:employee_name] = params[:employee][:name]
-    session[:employee_phone] = params[:employee][:phone]
-    session[:employee_password] = params[:employee][:password]
-    session[:employee_password_confirmation] = params[:employee][:password_confirmation]
-
-    Rails.logger.info("Dados salvos no step_2 - Nome: #{session[:employee_name]}, Phone: #{session[:employee_phone]}")
-
-    # Verificar se o email ainda existe na sessão
-    if session[:employee_email].blank?
-      Rails.logger.error("Email ausente na sessão após step 2")
-      flash[:alert] = "Dados incompletos. Por favor, inicie o cadastro novamente."
-      redirect_to company_register_path
-      return
-    end
-
-    redirect_to company_registrations_step_3_path
   end
 
+  # GET /company/registrations/step-3
+  # Exibe o formulário da terceira etapa do registro
   def step_3
     # Etapa 3 - Dados da empresa (nome, número de funcionários, regime de trabalho)
     Rails.logger.info("Iniciando step_3 - Dados da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
   end
 
+  # PATCH /company/registrations/step-3
+  # Processa a terceira etapa do registro
   def save_step_3
-    # Processar etapa 3
-    # Validar campos obrigatórios
-    @errors = []
-    @errors << "Nome da empresa é obrigatório" if params[:company][:name].blank?
-    @errors << "Número de funcionários é obrigatório" if params[:company][:employee_count].blank?
-    @errors << "Regime de trabalho é obrigatório" if params[:company][:work_regime].blank?
+    # Processar etapa 3 - Coletar dados da empresa
+    company_params = {
+      name: params[:company][:name],
+      employee_count: params[:company][:employee_count],
+      work_regime: params[:company][:work_regime]
+    }
 
-    if @errors.any?
-      flash.now[:alert] = @errors.join(", ")
+    # Validações básicas
+    errors = []
+    errors << "Nome da empresa é obrigatório" if company_params[:name].blank?
+    errors << "Número de funcionários é obrigatório" if company_params[:employee_count].blank?
+    errors << "Regime de trabalho é obrigatório" if company_params[:work_regime].blank?
+
+    if errors.any?
+      flash.now[:alert] = ErrorHandlerService.format_error_array(errors)
       render :step_3, status: :unprocessable_entity
       return
     end
 
-    # Verificar se ainda temos o email na sessão
-    if session[:employee_email].blank?
-      flash.now[:alert] = "Email não encontrado. Por favor, inicie o cadastro novamente."
-      redirect_to company_register_path
-      return
-    end
-
-    # Criar a empresa com os dados coletados até agora
-    @company = Company.new(
-      name: params[:company][:name],
-      cnpj: session[:company_cnpj],
-      employee_count: params[:company][:employee_count],
-      work_regime: params[:company][:work_regime]
+    # Criar a empresa
+    session_data = SessionManagerService.get_company_data(session)
+    result = CompanyRegistrationService.create_company(
+      company_params,
+      session_data[:cnpj],
+      session_data[:terms_accepted]
     )
 
-    if @company.save
-      session[:company_id] = @company.id
+    if result[:success]
+      # Armazenar o ID da empresa na sessão
+      SessionManagerService.store_company_id(session, result[:company].id)
       redirect_to company_registrations_step_4_path
     else
-      flash.now[:alert] = @company.errors.full_messages.join(", ")
+      flash.now[:alert] = ErrorHandlerService.format_operation_errors(result)
       render :step_3, status: :unprocessable_entity
     end
   end
 
+  # GET /company/registrations/step-4
+  # Exibe o formulário da quarta etapa do registro
   def step_4
     # Etapa 4 - Dados do escritório
     # Pré-selecionar a cidade escolhida na etapa 1
@@ -126,105 +126,97 @@ class Company::RegistrationsController < ApplicationController
     Rails.logger.info("Company ID: #{session[:company_id]}, Company: #{@company&.inspect}")
   end
 
+  # PATCH /company/registrations/complete
+  # Processa a quarta etapa do registro e finaliza o cadastro
   def complete
-    # Processar etapa 4 e finalizar cadastro
-    # Validar campos obrigatórios
-    @errors = []
-    @errors << "CEP é obrigatório" if params[:office][:zip_code].blank?
-    @errors << "Número é obrigatório" if params[:office][:number].blank?
-    @errors << "Bairro é obrigatório" if params[:office][:neighborhood].blank?
+    # Processar etapa 4 e finalizar cadastro - Coletar dados do escritório
+    office_params = {
+      city_id: params[:office][:city_id] || session[:office_city_id],
+      zip_code: params[:office][:zip_code],
+      number: params[:office][:number],
+      neighborhood: params[:office][:neighborhood]
+    }
 
-    if @errors.any?
-      flash.now[:alert] = @errors.join(", ")
-      render :step_4, status: :unprocessable_entity
-      return
-    end
+    # Obter dados do administrador da sessão
+    admin_params = SessionManagerService.get_admin_data(session)
 
-    # Verificar dados da sessão
-    required_keys = [ :employee_name, :employee_email, :employee_password ]
-    if required_keys.any? { |key| session[key].blank? }
-      missing_keys = required_keys.select { |key| session[key].blank? }
-      Rails.logger.error("Dados do administrador ausentes: #{missing_keys.join(', ')}")
-      Rails.logger.error("Conteúdo da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
-      redirect_to company_registrations_step_2_path, alert: "Dados do administrador ausentes. Por favor, preencha-os novamente."
-      return
-    end
+    # Finalizar o registro
+    result = CompanyRegistrationService.complete_registration(
+      session[:company_id],
+      office_params,
+      admin_params
+    )
 
-    # Criar o escritório
-    office = @company.offices.build(office_params)
-    office.name = "Escritório Principal"
+    if result[:success]
+      # Limpar a sessão de registro
+      SessionManagerService.clear_registration_data(session)
 
-    if office.save
-      # Criar o usuário administrador
-      @admin = Employee.new(
-        name: session[:employee_name],
-        email: session[:employee_email],
-        phone: session[:employee_phone],
-        password: session[:employee_password],
-        password_confirmation: session[:employee_password_confirmation] || session[:employee_password],
-        company: @company,
-        office: office,
-        role: "admin",
-        active: true
+      # Autenticar o usuário
+      AuthenticationService.sign_in(self, result[:admin])
+
+      # Redirecionar para o dashboard
+      redirect_to company_dashboard_path, notice: "Cadastro finalizado com sucesso! Bem-vindo(a) ao Foome."
+    else
+      # Log do erro
+      ErrorHandlerService.log_errors(
+        "Erro ao finalizar cadastro",
+        result[:errors],
+        { company_id: session[:company_id], office_params: office_params }
       )
 
-      Rails.logger.info("Criando administrador: #{@admin.attributes.except('password', 'password_confirmation').inspect}")
-
-      if @admin.save
-        # Marcar cadastro como completo
-        @company.update(onboarding_completed: true)
-
-        # Limpar a sessão
-        clear_registration_session
-
-        # Autenticar o usuário
-        sign_in(@admin)
-
-        # Redirecionar para o dashboard
-        redirect_to company_dashboard_path, notice: "Cadastro finalizado com sucesso! Bem-vindo(a) ao Foome."
-      else
-        # Se não conseguir criar o admin, excluir a empresa e o escritório para evitar inconsistências
-        Rails.logger.error("Erro ao criar admin: #{@admin.errors.full_messages}")
-        office.destroy
-        @company.destroy
-        flash.now[:alert] = @admin.errors.full_messages.join(", ")
-        render :step_4, status: :unprocessable_entity
-      end
-    else
-      flash.now[:alert] = office.errors.full_messages.join(", ")
+      flash.now[:alert] = ErrorHandlerService.format_operation_errors(result)
       render :step_4, status: :unprocessable_entity
     end
   end
 
   private
 
+  # Valida os dados da sessão para garantir que o fluxo esteja correto
   def validate_session_data
     # Verificar se os dados básicos da sessão ainda existem
-    required_keys = [ :employee_email, :company_cnpj, :office_city_id ]
+    if step_2_or_above?
+      result = SessionManagerService.validate_basic_data(session)
 
-    if step_2_or_above? && (required_keys.any? { |key| session[key].blank? })
-      redirect_to company_register_path, alert: "Sessão expirada. Por favor, inicie o cadastro novamente."
-      return
+      unless result[:success]
+        ErrorHandlerService.log_errors(
+          "Sessão inválida - dados básicos",
+          result,
+          { action: action_name }
+        )
+
+        redirect_to company_register_path, alert: ErrorHandlerService.format_session_validation_errors(result)
+        return
+      end
     end
 
     # Verificar dados do administrador a partir do step 3
     if step_3_or_above?
-      admin_keys = [ :employee_name, :employee_password ]
-      if admin_keys.any? { |key| session[key].blank? }
-        redirect_to company_registrations_step_2_path, alert: "Dados do administrador ausentes. Por favor, preencha-os novamente."
+      result = SessionManagerService.validate_admin_data(session)
+
+      unless result[:success]
+        ErrorHandlerService.log_errors(
+          "Sessão inválida - dados do administrador",
+          result,
+          { action: action_name }
+        )
+
+        redirect_to company_registrations_step_2_path, alert: ErrorHandlerService.format_session_validation_errors(result)
         nil
       end
     end
   end
 
+  # Verifica se a ação atual é step 2 ou posterior
   def step_2_or_above?
     action_name.in?([ "step_2", "save_step_2", "step_3", "save_step_3", "step_4", "complete" ])
   end
 
+  # Verifica se a ação atual é step 3 ou posterior
   def step_3_or_above?
     action_name.in?([ "step_3", "save_step_3", "step_4", "complete" ])
   end
 
+  # Carrega a empresa atual da sessão
   def set_company
     @company = Company.find_by(id: session[:company_id])
 
@@ -233,28 +225,10 @@ class Company::RegistrationsController < ApplicationController
     end
   end
 
+  # Redireciona se a empresa já completou o cadastro
   def redirect_if_completed
     if @company&.onboarding_completed?
       redirect_to "/company/login", notice: "Empresa já cadastrada. Por favor, faça login."
     end
-  end
-
-  def clear_registration_session
-    session.delete(:employee_email)
-    session.delete(:employee_name)
-    session.delete(:employee_phone)
-    session.delete(:employee_password)
-    session.delete(:employee_password_confirmation)
-    session.delete(:company_cnpj)
-    session.delete(:office_city_id)
-    session.delete(:company_id)
-  end
-
-  def office_params
-    params.require(:office).permit(:city_id, :zip_code, :number, :neighborhood)
-  end
-
-  def company_step_2_params
-    params.require(:company).permit(:employee_full_name, :employee_phone)
   end
 end

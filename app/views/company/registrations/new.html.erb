@@ -29,6 +29,15 @@
       </div>
     </div>
   </div>
+
+  <div class="mt-6">
+    <div class="flex items-center">
+      <%= form.check_box "company[terms_accepted]", class: "h-4 w-4 text-[#ff4b4b] focus:ring-[#ff4b4b] rounded", required: true %>
+      <label for="company_terms_accepted" class="ml-2 block text-sm text-gray-700">
+        Eu li e aceito os <%= link_to "termos de uso", "#", class: "text-[#ff4b4b] hover:underline", target: "_blank" %> e a <%= link_to "política de privacidade.", "#", class: "text-[#ff4b4b] hover:underline", target: "_blank" %>
+      </label>
+    </div>
+  </div>
   
   <div class="pt-4 flex space-x-4">
     <%= link_to "Voltar", root_path, class: "flex-1 flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-200" %>

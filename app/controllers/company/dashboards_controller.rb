@@ -1,70 +1,103 @@
 class Company::DashboardsController < ApplicationController
-  before_action :set_company_dashboard, only: %i[ show edit update destroy ]
+  # Controller responsável pelo dashboard da empresa
+  # Gerencia a exibição e interação com os dados do dashboard
 
-  # GET /company/dashboards or /company/dashboards.json
+  before_action :authenticate_employee
+  layout "company_dashboard"
+
+  # GET /company/dashboard
+  # Exibe o dashboard principal da empresa
   def index
-    @company_dashboards = Company::Dashboard.all
-  end
+    # Obter o funcionário atual
+    employee = AuthenticationService.current_user(self)
+    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless employee
 
-  # GET /company/dashboards/1 or /company/dashboards/1.json
-  def show
-  end
+    # Obter os dados do dashboard
+    result = DashboardService.get_dashboard_data(employee.company_id)
 
-  # GET /company/dashboards/new
-  def new
-    @company_dashboard = Company::Dashboard.new
-  end
+    if result[:success]
+      @company = result[:company]
+      @dashboard_data = result
 
-  # GET /company/dashboards/1/edit
-  def edit
-  end
+      # Obter estatísticas adicionais se necessário
+      # Renderizar o dashboard
+    else
+      # Log do erro
+      ErrorHandlerService.log_errors(
+        "Erro ao carregar dashboard",
+        result[:errors],
+        { employee_id: employee.id, company_id: employee.company_id }
+      )
 
-  # POST /company/dashboards or /company/dashboards.json
-  def create
-    @company_dashboard = Company::Dashboard.new(company_dashboard_params)
-
-    respond_to do |format|
-      if @company_dashboard.save
-        format.html { redirect_to @company_dashboard, notice: "Dashboard was successfully created." }
-        format.json { render :show, status: :created, location: @company_dashboard }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @company_dashboard.errors, status: :unprocessable_entity }
-      end
+      # Redirecionar com mensagem de erro
+      redirect_to "/company/login", alert: "Não foi possível carregar o dashboard. Por favor, tente novamente."
     end
   end
 
-  # PATCH/PUT /company/dashboards/1 or /company/dashboards/1.json
-  def update
-    respond_to do |format|
-      if @company_dashboard.update(company_dashboard_params)
-        format.html { redirect_to @company_dashboard, notice: "Dashboard was successfully updated." }
-        format.json { render :show, status: :ok, location: @company_dashboard }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @company_dashboard.errors, status: :unprocessable_entity }
-      end
+  # GET /company/dashboard/employees
+  # Exibe o dashboard de funcionários
+  def employees
+    # Obter o funcionário atual
+    employee = AuthenticationService.current_user(self)
+    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless employee
+
+    # Obter estatísticas de funcionários
+    result = DashboardService.get_employee_stats(employee.company_id)
+
+    if result[:success]
+      @company = Company.find(employee.company_id)
+      @employee_stats = result[:stats]
+      @employees = @company.employees.order(:name)
+
+      # Renderizar o dashboard de funcionários
+    else
+      # Log do erro
+      ErrorHandlerService.log_errors(
+        "Erro ao carregar dashboard de funcionários",
+        result[:errors],
+        { employee_id: employee.id, company_id: employee.company_id }
+      )
+
+      # Redirecionar com mensagem de erro
+      redirect_to company_dashboard_path, alert: "Não foi possível carregar as estatísticas de funcionários."
     end
   end
 
-  # DELETE /company/dashboards/1 or /company/dashboards/1.json
-  def destroy
-    @company_dashboard.destroy!
+  # GET /company/dashboard/offices
+  # Exibe o dashboard de escritórios
+  def offices
+    # Obter o funcionário atual
+    employee = AuthenticationService.current_user(self)
+    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless employee
 
-    respond_to do |format|
-      format.html { redirect_to company_dashboards_path, status: :see_other, notice: "Dashboard was successfully destroyed." }
-      format.json { head :no_content }
+    # Obter estatísticas de escritórios
+    result = DashboardService.get_office_stats(employee.company_id)
+
+    if result[:success]
+      @company = Company.find(employee.company_id)
+      @office_stats = result[:stats]
+      @offices = @company.offices.includes(city: :state).order("cities.name")
+
+      # Renderizar o dashboard de escritórios
+    else
+      # Log do erro
+      ErrorHandlerService.log_errors(
+        "Erro ao carregar dashboard de escritórios",
+        result[:errors],
+        { employee_id: employee.id, company_id: employee.company_id }
+      )
+
+      # Redirecionar com mensagem de erro
+      redirect_to company_dashboard_path, alert: "Não foi possível carregar as estatísticas de escritórios."
     end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_company_dashboard
-      @company_dashboard = Company::Dashboard.find(params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def company_dashboard_params
-      params.fetch(:company_dashboard, {})
+  # Verifica se o usuário está autenticado
+  def authenticate_employee
+    unless AuthenticationService.logged_in?(self)
+      redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página."
     end
+  end
 end
