@@ -5,7 +5,7 @@
 <h1 class="text-2xl font-bold text-center mb-2">Cadastre sua empresa</h1>
 <p class="text-gray-600 text-center mb-6">Vamos começar com algumas informações básicas</p>
 
-<%= form_with url: company_register_path, method: :post, class: "space-y-4" do |form| %>
+<%= form_with url: company_register_path, method: :post, class: "space-y-4", data: { controller: "mask" } do |form| %>
   <div>
     <%= form.label :employee_email, "Email", class: "block text-sm font-medium text-gray-700 mb-1" %>
     <%= form.email_field "employee[email]", placeholder: "Digite seu email profissional", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]" %>
@@ -13,7 +13,7 @@
   
   <div>
     <%= form.label :company_cnpj, "CNPJ", class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= form.text_field "company[cnpj]", placeholder: "00.000.000/0000-00", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]", data: { mask: "cnpj" } %>
+    <%= form.text_field "company[cnpj]", placeholder: "00.000.000/0000-00", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#ff4b4b] focus:border-[#ff4b4b]", data: { mask_target: "cnpj" } %>
   </div>
   
   <div>
