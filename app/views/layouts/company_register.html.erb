@@ -1,48 +1,45 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Foome - Cadastro de Empresa</title>
+    <title>foome | Cadastro de empresa</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
+    
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 min-h-screen flex flex-col">
-    <div class="bg-white shadow-sm py-4">
-      <div class="container mx-auto px-4">
-        <div class="flex justify-center">
-          <%= link_to root_path do %>
-            <%= image_tag "/logo_foome.svg", alt: "Foome", class: "h-10" %>
-          <% end %>
-        </div>
-      </div>
+  <body class="bg-foome-gray-lighter">
+    <!-- Logo -->
+    <div class="pt-6 pb-4 flex justify-center">
+      <%= link_to root_path, class: "flex items-center" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff4b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils-crossed">
+          <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
+          <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
+          <path d="m2.1 21.8 6.4-6.3"/>
+          <path d="m19 5-7 7"/>
+        </svg>
+        <span class="ml-2 text-2xl font-semibold text-foome-primary">foome</span>
+      <% end %>
     </div>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-      <div class="max-w-md mx-auto">
-        <!-- Visualização de etapas do wizard -->
-        <%= yield :wizard_steps %>
-        
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mt-6">
-          <% if flash[:notice] %>
-            <div class="mb-4 p-4 bg-green-50 rounded-md border border-green-200 text-green-700">
-              <%= flash[:notice] %>
-            </div>
-          <% end %>
-          
-          <% if flash[:alert] %>
-            <div class="mb-4 p-4 bg-red-50 rounded-md border border-red-200 text-red-700">
-              <%= flash[:alert] %>
-            </div>
-          <% end %>
-          
+    <div class="container mx-auto px-4 pb-16">
+      <div class="max-w-3xl mx-auto bg-white shadow-sm rounded-lg overflow-hidden">
+        <!-- Step wizard -->
+        <% if content_for?(:wizard_steps) %>
+          <div class="p-4 border-b border-foome-gray-light">
+            <%= yield :wizard_steps %>
+          </div>
+        <% end %>
+
+        <!-- Content -->
+        <div class="p-6">
+          <%= render "shared/flash_messages" %>
           <%= yield %>
         </div>
       </div>
-    </main>
+    </div>
   </body>
 </html> 

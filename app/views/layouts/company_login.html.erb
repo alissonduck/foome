@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Foome - Login de Empresa</title>
+    <title>foome | Login de empresa</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -24,37 +24,27 @@
                 <path d="m2.1 21.8 6.4-6.3"/>
                 <path d="m19 5-7 7"/>
               </svg>
-              <span class="ml-2 text-2xl font-semibold text-[#ff4b4b]">foome</span>
+              <span class="ml-2 text-2xl font-semibold text-foome-primary">foome</span>
             </div>
           <% end %>
           
-          <% if flash[:notice] %>
-            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
-              <%= flash[:notice] %>
-            </div>
-          <% end %>
-          
-          <% if flash[:alert] %>
-            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-              <%= flash[:alert] %>
-            </div>
-          <% end %>
+          <%= render "shared/flash_messages" %>
           
           <%= yield %>
         </div>
       </div>
       
       <!-- Lado direito (imagem) - aparece apenas em telas lg ou maiores -->
-      <div class="hidden lg:flex lg:flex-1 bg-gray-100 items-center justify-center relative">
+      <div class="hidden lg:flex lg:flex-1 bg-foome-gray-light items-center justify-center relative">
         <div class="absolute bottom-10 left-10 right-10 bg-white/80 backdrop-blur-sm p-6 rounded-lg">
-          <p class="text-lg text-gray-800 italic">
+          <p class="text-lg text-foome-dark italic">
             "Com o foome, conseguimos oferecer um benefício alimentar de qualidade para nossos funcionários, com uma rede diversificada de estabelecimentos."
           </p>
-          <p class="mt-2 text-sm text-gray-600 font-medium">
+          <p class="mt-2 text-sm text-foome-gray font-medium">
             Maria Santos, Diretora de RH
           </p>
         </div>
-        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+        <div class="w-full h-full bg-foome-gray-lighter flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#ff4b4b" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils-crossed">
             <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
             <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>

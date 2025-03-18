@@ -13,7 +13,7 @@ class AuthenticationService
 
     employee = Employee.find_by(email: email)
 
-    if employee && employee.authenticate(password)
+    if employee && employee.valid_password?(password)
       { success: true, employee: employee }
     else
       { success: false, errors: [ "Email ou senha inválidos" ] }
