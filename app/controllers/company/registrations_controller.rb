@@ -1,6 +1,6 @@
 class Company::RegistrationsController < ApplicationController
   layout "company_register"
-  before_action :validate_session_data, only: [ :step_2, :save_step_2, :step_3, :save_step_3 ]
+  before_action :validate_session_data, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4 ]
   before_action :set_company, only: [ :step_4, :complete ]
   before_action :redirect_if_completed, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4, :complete ]
 
@@ -33,6 +33,7 @@ class Company::RegistrationsController < ApplicationController
 
   def step_2
     # Etapa 2 - Dados do administrador (nome, telefone, senha)
+    Rails.logger.info("Iniciando step_2 - Dados da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
   end
 
   def save_step_2
@@ -59,12 +60,24 @@ class Company::RegistrationsController < ApplicationController
     session[:employee_name] = params[:employee][:name]
     session[:employee_phone] = params[:employee][:phone]
     session[:employee_password] = params[:employee][:password]
+    session[:employee_password_confirmation] = params[:employee][:password_confirmation]
+
+    Rails.logger.info("Dados salvos no step_2 - Nome: #{session[:employee_name]}, Phone: #{session[:employee_phone]}")
+
+    # Verificar se o email ainda existe na sessão
+    if session[:employee_email].blank?
+      Rails.logger.error("Email ausente na sessão após step 2")
+      flash[:alert] = "Dados incompletos. Por favor, inicie o cadastro novamente."
+      redirect_to company_register_path
+      return
+    end
 
     redirect_to company_registrations_step_3_path
   end
 
   def step_3
     # Etapa 3 - Dados da empresa (nome, número de funcionários, regime de trabalho)
+    Rails.logger.info("Iniciando step_3 - Dados da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
   end
 
   def save_step_3
@@ -91,7 +104,6 @@ class Company::RegistrationsController < ApplicationController
     # Criar a empresa com os dados coletados até agora
     @company = Company.new(
       name: params[:company][:name],
-      email: session[:employee_email], # Usar o email do funcionário como email da empresa inicialmente
       cnpj: session[:company_cnpj],
       employee_count: params[:company][:employee_count],
       work_regime: params[:company][:work_regime]
@@ -110,6 +122,8 @@ class Company::RegistrationsController < ApplicationController
     # Etapa 4 - Dados do escritório
     # Pré-selecionar a cidade escolhida na etapa 1
     @selected_city_id = session[:office_city_id]
+    Rails.logger.info("Iniciando step_4 - Dados da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
+    Rails.logger.info("Company ID: #{session[:company_id]}, Company: #{@company&.inspect}")
   end
 
   def complete
@@ -127,14 +141,18 @@ class Company::RegistrationsController < ApplicationController
     end
 
     # Verificar dados da sessão
-    if session[:employee_name].blank? || session[:employee_email].blank? || session[:employee_password].blank?
-      Rails.logger.error("Dados do administrador ausentes: name=#{session[:employee_name]}, email=#{session[:employee_email]}")
+    required_keys = [ :employee_name, :employee_email, :employee_password ]
+    if required_keys.any? { |key| session[key].blank? }
+      missing_keys = required_keys.select { |key| session[key].blank? }
+      Rails.logger.error("Dados do administrador ausentes: #{missing_keys.join(', ')}")
+      Rails.logger.error("Conteúdo da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
       redirect_to company_registrations_step_2_path, alert: "Dados do administrador ausentes. Por favor, preencha-os novamente."
       return
     end
 
     # Criar o escritório
     office = @company.offices.build(office_params)
+    office.name = "Escritório Principal"
 
     if office.save
       # Criar o usuário administrador
@@ -143,14 +161,14 @@ class Company::RegistrationsController < ApplicationController
         email: session[:employee_email],
         phone: session[:employee_phone],
         password: session[:employee_password],
+        password_confirmation: session[:employee_password_confirmation] || session[:employee_password],
         company: @company,
         office: office,
-        role: "admin", # Usar role em vez de admin:true
-        role_name: "Administrador",
+        role: "admin",
         active: true
       )
 
-      Rails.logger.info("Criando administrador: #{@admin.attributes.inspect}")
+      Rails.logger.info("Criando administrador: #{@admin.attributes.except('password', 'password_confirmation').inspect}")
 
       if @admin.save
         # Marcar cadastro como completo
@@ -226,6 +244,7 @@ class Company::RegistrationsController < ApplicationController
     session.delete(:employee_name)
     session.delete(:employee_phone)
     session.delete(:employee_password)
+    session.delete(:employee_password_confirmation)
     session.delete(:company_cnpj)
     session.delete(:office_city_id)
     session.delete(:company_id)
@@ -233,5 +252,9 @@ class Company::RegistrationsController < ApplicationController
 
   def office_params
     params.require(:office).permit(:city_id, :zip_code, :number, :neighborhood)
+  end
+
+  def company_step_2_params
+    params.require(:company).permit(:employee_full_name, :employee_phone)
   end
 end

@@ -16,13 +16,10 @@ class CompaniesTest < ApplicationSystemTestCase
 
     check "Active" if @company.active
     fill_in "Cnpj", with: @company.cnpj
-    fill_in "Email", with: @company.email
     fill_in "Employee count", with: @company.employee_count
     fill_in "Max users", with: @company.max_users
     fill_in "Name", with: @company.name
     check "Onboarding completed" if @company.onboarding_completed
-    fill_in "Phone", with: @company.phone
-    fill_in "Sector", with: @company.sector
     check "Terms accepted" if @company.terms_accepted
     fill_in "Work regime", with: @company.work_regime
     click_on "Create Company"
@@ -37,13 +34,10 @@ class CompaniesTest < ApplicationSystemTestCase
 
     check "Active" if @company.active
     fill_in "Cnpj", with: @company.cnpj
-    fill_in "Email", with: @company.email
     fill_in "Employee count", with: @company.employee_count
     fill_in "Max users", with: @company.max_users
     fill_in "Name", with: @company.name
     check "Onboarding completed" if @company.onboarding_completed
-    fill_in "Phone", with: @company.phone
-    fill_in "Sector", with: @company.sector
     check "Terms accepted" if @company.terms_accepted
     fill_in "Work regime", with: @company.work_regime
     click_on "Update Company"

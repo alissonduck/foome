@@ -2,7 +2,6 @@ class CompanyRegistrationService
   def initialize_registration(params)
     company = Company.new(
       name: params[:name],
-      email: params[:email],
       cnpj: params[:cnpj]
     )
 
