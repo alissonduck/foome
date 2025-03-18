@@ -1,9 +1,16 @@
-<% content_for :title, "New office" %>
-
-<div class="md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl">New office</h1>
-
-  <%= render "form", office: @office %>
-
-  <%= link_to "Back to offices", offices_path, class: "w-full sm:w-auto text-center mt-2 sm:mt-0 sm:ml-2 rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
+<%# Cabeçalho da página %>
+<div class="mb-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-foome-dark">Novo escritório</h1>
+      <p class="mt-1 text-sm text-foome-gray">Preencha os dados para criar um novo escritório</p>
+    </div>
+  </div>
 </div>
+
+<%# Formulário %>
+<div class="bg-white shadow sm:rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <%= render "form", office: @office %>
+  </div>
+</div> 
