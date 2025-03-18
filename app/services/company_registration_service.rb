@@ -12,6 +12,11 @@ class CompanyRegistrationService
     errors << "Cidade é obrigatória" if params[:office_city_id].blank?
     errors << "É necessário aceitar os termos de uso e política de privacidade" if params[:terms_accepted] != "1"
 
+    # Verificar se o email já está em uso
+    if params[:employee_email].present? && Employee.exists?(email: params[:employee_email])
+      errors << "Este email já está em uso. Por favor, utilize outro email."
+    end
+
     if errors.any?
       { success: false, errors: errors }
     else
@@ -75,7 +80,6 @@ class CompanyRegistrationService
       city_id: params[:city_id],
       zip_code: params[:zip_code],
       number: params[:number],
-      complement: params[:complement],
       neighborhood: params[:neighborhood]
     )
 
@@ -92,6 +96,11 @@ class CompanyRegistrationService
   # @param [Hash] params Parâmetros do administrador
   # @return [Hash] Resultado da operação com o administrador criado ou erros
   def self.create_admin(company, office, params)
+    # Verificar se já existe um funcionário com esse email
+    if Employee.exists?(email: params[:email])
+      return { success: false, errors: [ "Este email já está em uso. Por favor, utilize outro email." ] }
+    end
+
     admin = company.employees.new(
       name: params[:name],
       email: params[:email],
@@ -136,6 +145,11 @@ class CompanyRegistrationService
 
     return { success: false, errors: admin_errors } if admin_errors.any?
 
+    # Verificar se o email já está em uso
+    if Employee.exists?(email: admin_params[:email])
+      return { success: false, errors: [ "Este email já está em uso. Por favor, utilize outro email." ] }
+    end
+
     company = Company.find_by(id: company_id)
     return { success: false, errors: [ "Empresa não encontrada" ] } unless company
 
@@ -147,12 +161,16 @@ class CompanyRegistrationService
 
       # Criar administrador
       admin_result = create_admin(company, office_result[:office], admin_params)
-      raise ActiveRecord::Rollback unless admin_result[:success]
+
+      unless admin_result[:success]
+        Rails.logger.error("Erro ao criar administrador: #{admin_result[:errors].inspect}")
+        raise ActiveRecord::Rollback
+      end
 
       return { success: true, admin: admin_result[:admin], company: company }
     end
 
     # Se chegou aqui, é porque ocorreu um rollback
-    { success: false, errors: [ "Erro ao completar o registro" ] }
+    { success: false, errors: [ "Erro ao completar o registro. Verifique se o email já está em uso." ] }
   end
 end

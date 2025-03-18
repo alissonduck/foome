@@ -107,4 +107,11 @@ class SessionManagerService
       neighborhood: params[:neighborhood]
     }
   end
+
+  # Atualiza o email do funcionário na sessão
+  # @param [ActionDispatch::Request::Session] session Objeto de sessão
+  # @param [String] email Novo email do funcionário
+  def self.update_employee_email(session, email)
+    session[:employee_email] = email
+  end
 end

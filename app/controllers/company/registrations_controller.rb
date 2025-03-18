@@ -25,6 +25,12 @@ class Company::RegistrationsController < ApplicationController
       terms_accepted: params[:company][:terms_accepted]
     }
 
+    # Limpar registros pendentes para este email
+    if step_params[:employee_email].present?
+      cleaned = clean_pending_records(step_params[:employee_email])
+      Rails.logger.info("Registros pendentes removidos no step 1: #{cleaned}") if cleaned
+    end
+
     # Validar os dados da etapa 1
     result = CompanyRegistrationService.validate_step_1(step_params)
 
@@ -137,8 +143,39 @@ class Company::RegistrationsController < ApplicationController
       neighborhood: params[:office][:neighborhood]
     }
 
+    # Verificar se o usuário forneceu um novo email
+    if params[:employee] && params[:employee][:email].present?
+      # Atualizar o email na sessão
+      SessionManagerService.update_employee_email(session, params[:employee][:email])
+      Rails.logger.info("Email atualizado na sessão: #{params[:employee][:email]}")
+    end
+
     # Obter dados do administrador da sessão
     admin_params = SessionManagerService.get_admin_data(session)
+
+    # Tentar limpar registros pendentes para este email
+    cleaned = clean_pending_records(admin_params[:email])
+    Rails.logger.info("Registros pendentes removidos: #{cleaned}") if cleaned
+
+    # Verificar se o email ainda está em uso após a limpeza
+    if Employee.exists?(email: admin_params[:email])
+      # Registro de debug para identificar o employee que está usando o email
+      existing_employee = Employee.find_by(email: admin_params[:email])
+      Rails.logger.debug("Email ainda em uso após limpeza: #{admin_params[:email]}")
+      Rails.logger.debug("Employee ID: #{existing_employee.id}")
+      Rails.logger.debug("Employee Company ID: #{existing_employee.company_id}")
+      Rails.logger.debug("Employee criado em: #{existing_employee.created_at}")
+
+      flash.now[:alert] = "Este email já está cadastrado. Por favor, utilize outro email."
+
+      # Permitir que o usuário edite o email na etapa 4
+      @email_in_use = true
+      @current_email = admin_params[:email]
+      @selected_city_id = session[:office_city_id]
+
+      render :step_4, status: :unprocessable_entity
+      return
+    end
 
     # Finalizar o registro
     result = CompanyRegistrationService.complete_registration(
@@ -163,6 +200,12 @@ class Company::RegistrationsController < ApplicationController
         result[:errors],
         { company_id: session[:company_id], office_params: office_params }
       )
+
+      # Verificar se é um erro de email duplicado
+      if result[:errors].any? { |e| e.include?("email já está em uso") }
+        @email_in_use = true
+        @current_email = admin_params[:email]
+      end
 
       flash.now[:alert] = ErrorHandlerService.format_operation_errors(result)
       render :step_4, status: :unprocessable_entity
@@ -230,5 +273,43 @@ class Company::RegistrationsController < ApplicationController
     if @company&.onboarding_completed?
       redirect_to "/company/login", notice: "Empresa já cadastrada. Por favor, faça login."
     end
+  end
+
+  # Limpa registros pendentes (incompletos) do email atual
+  # @param [String] email Email a ser verificado
+  def clean_pending_records(email)
+    # Encontrar employees pendentes com este email
+    pending_employees = Employee.joins(:company)
+                              .where(email: email)
+                              .where(companies: { onboarding_completed: false })
+
+    if pending_employees.any?
+      Rails.logger.info("Removendo #{pending_employees.count} registros pendentes para o email: #{email}")
+
+      # Remover employees pendentes e suas companies
+      pending_employees.each do |employee|
+        company_id = employee.company_id
+        Rails.logger.info("Removendo employee ID: #{employee.id} e company ID: #{company_id}")
+
+        # Remover em uma transação para garantir a consistência
+        ActiveRecord::Base.transaction do
+          # Destruir o employee
+          employee.destroy
+
+          # Verificar se a company existe e se não tem outros employees
+          company = Company.find_by(id: company_id)
+          if company && company.employees.count == 0
+            # Remover escritórios
+            company.offices.destroy_all
+            # Remover a company
+            company.destroy
+          end
+        end
+      end
+
+      return true
+    end
+
+    false
   end
 end

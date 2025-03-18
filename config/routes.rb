@@ -21,7 +21,17 @@ Rails.application.routes.draw do
     sessions: "employees/sessions",
     registrations: "employees/registrations",
     passwords: "employees/passwords"
-  }
+  }, skip: [ :registrations ]
+
+  # Rotas personalizadas para registrations - somente edit e destroy
+  devise_scope :employee do
+    get "employees/edit", to: "employees/registrations#edit", as: "edit_employee_registration"
+    put "employees", to: "employees/registrations#update", as: "employee_registration"
+    delete "employees", to: "employees/registrations#destroy"
+    # Bloqueamos sign_up e new
+    get "employees/sign_up", to: redirect("/company/register")
+    post "employees", to: redirect("/company/register")
+  end
 
   # Company Namespace
   namespace :company do
