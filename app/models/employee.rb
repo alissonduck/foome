@@ -44,7 +44,6 @@ class Employee < ApplicationRecord
 
   def set_defaults
     self.active = true if self.active.nil?
-    self.role ||= "member"
-    self.role_name ||= role.capitalize
+    self.role ||= "admin"
   end
 end

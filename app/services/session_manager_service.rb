@@ -39,9 +39,13 @@ class SessionManagerService
     session.delete(:employee_password)
     session.delete(:employee_password_confirmation)
     session.delete(:company_cnpj)
+    session.delete(:company_name)
+    session.delete(:company_employee_count)
+    session.delete(:company_work_regime)
     session.delete(:office_city_id)
     session.delete(:company_id)
     session.delete(:terms_accepted)
+    session.delete(:temp_company_id)
   end
 
   # Verifica se os dados básicos estão presentes na sessão
@@ -91,7 +95,11 @@ class SessionManagerService
   def self.get_company_data(session)
     {
       cnpj: session[:company_cnpj],
-      terms_accepted: session[:terms_accepted]
+      name: session[:company_name],
+      employee_count: session[:company_employee_count],
+      work_regime: session[:company_work_regime],
+      terms_accepted: session[:terms_accepted],
+      temp_id: session[:temp_company_id]
     }
   end
 

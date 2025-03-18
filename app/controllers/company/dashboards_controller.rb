@@ -4,33 +4,43 @@ class Company::DashboardsController < ApplicationController
 
   before_action :authenticate_employee
   layout "company_dashboard"
+  helper_method :current_employee
 
   # GET /company/dashboard
   # Exibe o dashboard principal da empresa
   def index
     # Obter o funcionário atual
-    employee = AuthenticationService.current_user(self)
-    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless employee
+    @employee = current_employee
+    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless @employee
 
     # Obter os dados do dashboard
-    result = DashboardService.get_dashboard_data(employee.company_id)
+    @company = @employee.company
 
-    if result[:success]
-      @company = result[:company]
-      @dashboard_data = result
+    # Inicializar dados do dashboard
+    @dashboard_data = {
+      company: @company,
+      offices: {
+        count: @company.offices.count,
+        stats: { by_state: {} }
+      },
+      employees: {
+        count: @company.employees.count,
+        stats: {
+          active: @company.employees.where(active: true).count,
+          inactive: @company.employees.where(active: false).count
+        }
+      },
+      teams: {
+        count: 0 # Implementar quando tivermos o modelo de equipes
+      }
+    }
 
-      # Obter estatísticas adicionais se necessário
-      # Renderizar o dashboard
-    else
-      # Log do erro
-      ErrorHandlerService.log_errors(
-        "Erro ao carregar dashboard",
-        result[:errors],
-        { employee_id: employee.id, company_id: employee.company_id }
-      )
-
-      # Redirecionar com mensagem de erro
-      redirect_to "/company/login", alert: "Não foi possível carregar o dashboard. Por favor, tente novamente."
+    # Agrupar escritórios por estado se houver escritórios
+    if @company.offices.any?
+      @dashboard_data[:offices][:stats][:by_state] = @company.offices
+                                                     .joins(city: :state)
+                                                     .group("states.name")
+                                                     .count
     end
   end
 
@@ -38,66 +48,57 @@ class Company::DashboardsController < ApplicationController
   # Exibe o dashboard de funcionários
   def employees
     # Obter o funcionário atual
-    employee = AuthenticationService.current_user(self)
-    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless employee
+    @employee = current_employee
+    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless @employee
 
     # Obter estatísticas de funcionários
-    result = DashboardService.get_employee_stats(employee.company_id)
+    @company = @employee.company
+    @employees = @company.employees.order(:name)
 
-    if result[:success]
-      @company = Company.find(employee.company_id)
-      @employee_stats = result[:stats]
-      @employees = @company.employees.order(:name)
-
-      # Renderizar o dashboard de funcionários
-    else
-      # Log do erro
-      ErrorHandlerService.log_errors(
-        "Erro ao carregar dashboard de funcionários",
-        result[:errors],
-        { employee_id: employee.id, company_id: employee.company_id }
-      )
-
-      # Redirecionar com mensagem de erro
-      redirect_to company_dashboard_path, alert: "Não foi possível carregar as estatísticas de funcionários."
-    end
+    @employee_stats = {
+      total: @employees.count,
+      active: @employees.where(active: true).count,
+      inactive: @employees.where(active: false).count,
+      admins: @employees.where(role: "admin").count
+    }
   end
 
   # GET /company/dashboard/offices
   # Exibe o dashboard de escritórios
   def offices
     # Obter o funcionário atual
-    employee = AuthenticationService.current_user(self)
-    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless employee
+    @employee = current_employee
+    return redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página." unless @employee
 
     # Obter estatísticas de escritórios
-    result = DashboardService.get_office_stats(employee.company_id)
+    @company = @employee.company
+    @offices = @company.offices.includes(city: :state).order("cities.name")
 
-    if result[:success]
-      @company = Company.find(employee.company_id)
-      @office_stats = result[:stats]
-      @offices = @company.offices.includes(city: :state).order("cities.name")
-
-      # Renderizar o dashboard de escritórios
-    else
-      # Log do erro
-      ErrorHandlerService.log_errors(
-        "Erro ao carregar dashboard de escritórios",
-        result[:errors],
-        { employee_id: employee.id, company_id: employee.company_id }
-      )
-
-      # Redirecionar com mensagem de erro
-      redirect_to company_dashboard_path, alert: "Não foi possível carregar as estatísticas de escritórios."
-    end
+    # Agrupar escritórios por estado
+    @office_stats = {
+      total: @offices.count,
+      by_state: @offices.joins(city: :state)
+                       .group("states.name")
+                       .count
+    }
   end
 
   private
 
   # Verifica se o usuário está autenticado
   def authenticate_employee
-    unless AuthenticationService.logged_in?(self)
+    unless logged_in?
       redirect_to "/company/login", alert: "Você precisa estar logado para acessar esta página."
     end
+  end
+
+  # Verifica se o usuário está logado
+  def logged_in?
+    AuthenticationService.logged_in?(self)
+  end
+
+  # Retorna o funcionário atual
+  def current_employee
+    @current_employee ||= AuthenticationService.current_user(self)
   end
 end

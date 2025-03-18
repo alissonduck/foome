@@ -124,11 +124,11 @@ class CompanyRegistrationService
   end
 
   # Finaliza o processo de registro
-  # @param [Integer] company_id ID da empresa
+  # @param [Hash] company_params Parâmetros da empresa
   # @param [Hash] office_params Parâmetros do escritório
   # @param [Hash] admin_params Parâmetros do administrador
   # @return [Hash] Resultado da operação
-  def self.complete_registration(company_id, office_params, admin_params)
+  def self.complete_registration(company_params, office_params, admin_params)
     # Validar parâmetros do escritório
     office_errors = []
     office_errors << "CEP é obrigatório" if office_params[:zip_code].blank?
@@ -145,29 +145,85 @@ class CompanyRegistrationService
 
     return { success: false, errors: admin_errors } if admin_errors.any?
 
+    # Validar dados da empresa
+    company_errors = []
+    company_errors << "Nome da empresa é obrigatório" if company_params[:name].blank?
+    company_errors << "CNPJ é obrigatório" if company_params[:cnpj].blank?
+
+    return { success: false, errors: company_errors } if company_errors.any?
+
     # Verificar se o email já está em uso
     if Employee.exists?(email: admin_params[:email])
       return { success: false, errors: [ "Este email já está em uso. Por favor, utilize outro email." ] }
     end
 
-    company = Company.find_by(id: company_id)
-    return { success: false, errors: [ "Empresa não encontrada" ] } unless company
-
     # Usamos uma transação para garantir que tudo seja criado ou nada
     ActiveRecord::Base.transaction do
-      # Criar escritório
-      office_result = create_office(company_id, office_params)
-      raise ActiveRecord::Rollback unless office_result[:success]
+      begin
+        # Criar a empresa
+        company = Company.new(
+          name: company_params[:name],
+          cnpj: company_params[:cnpj],
+          employee_count: company_params[:employee_count],
+          work_regime: company_params[:work_regime],
+          terms_accepted: company_params[:terms_accepted] == "1",
+          onboarding_completed: false
+        )
 
-      # Criar administrador
-      admin_result = create_admin(company, office_result[:office], admin_params)
+        unless company.save
+          Rails.logger.error("Erro ao criar empresa: #{company.errors.full_messages}")
+          return { success: false, errors: company.errors.full_messages }
+        end
 
-      unless admin_result[:success]
-        Rails.logger.error("Erro ao criar administrador: #{admin_result[:errors].inspect}")
+        Rails.logger.info("Empresa criada com sucesso: #{company.id}")
+
+        # Criar escritório
+        office = company.offices.new(
+          name: "Escritório Principal",
+          city_id: office_params[:city_id],
+          zip_code: office_params[:zip_code],
+          number: office_params[:number],
+          neighborhood: office_params[:neighborhood]
+        )
+
+        unless office.save
+          Rails.logger.error("Erro ao criar escritório: #{office.errors.full_messages}")
+          raise ActiveRecord::Rollback
+          return { success: false, errors: office.errors.full_messages }
+        end
+
+        Rails.logger.info("Escritório criado com sucesso: #{office.id}")
+
+        # Criar administrador
+        admin = company.employees.new(
+          name: admin_params[:name],
+          email: admin_params[:email],
+          phone: admin_params[:phone],
+          password: admin_params[:password],
+          password_confirmation: admin_params[:password_confirmation] || admin_params[:password],
+          office: office,
+          role: "admin",
+          active: true
+        )
+
+        unless admin.save
+          Rails.logger.error("Erro ao criar administrador: #{admin.errors.full_messages}")
+          raise ActiveRecord::Rollback
+          return { success: false, errors: admin.errors.full_messages }
+        end
+
+        Rails.logger.info("Administrador criado com sucesso: #{admin.id}")
+
+        # Marcar cadastro como completo
+        company.update(onboarding_completed: true)
+
+        return { success: true, admin: admin, company: company }
+      rescue => e
+        Rails.logger.error("Erro durante o processo de registro: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
         raise ActiveRecord::Rollback
+        return { success: false, errors: [ e.message ] }
       end
-
-      return { success: true, admin: admin_result[:admin], company: company }
     end
 
     # Se chegou aqui, é porque ocorreu um rollback

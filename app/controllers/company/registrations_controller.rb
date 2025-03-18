@@ -3,8 +3,7 @@ class Company::RegistrationsController < ApplicationController
   # Gerencia o fluxo de cadastro de empresas, administradores e escritórios
 
   layout "company_register"
-  before_action :validate_session_data, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4 ]
-  before_action :set_company, only: [ :step_4, :complete ]
+  before_action :validate_session_data, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4, :complete ]
   before_action :redirect_if_completed, only: [ :step_2, :save_step_2, :step_3, :save_step_3, :step_4, :complete ]
 
   # GET /company/register
@@ -104,22 +103,17 @@ class Company::RegistrationsController < ApplicationController
       return
     end
 
-    # Criar a empresa
-    session_data = SessionManagerService.get_company_data(session)
-    result = CompanyRegistrationService.create_company(
-      company_params,
-      session_data[:cnpj],
-      session_data[:terms_accepted]
-    )
+    # Armazenar os dados da empresa na sessão - não criar a empresa ainda
+    session[:company_name] = company_params[:name]
+    session[:company_employee_count] = company_params[:employee_count]
+    session[:company_work_regime] = company_params[:work_regime]
 
-    if result[:success]
-      # Armazenar o ID da empresa na sessão
-      SessionManagerService.store_company_id(session, result[:company].id)
-      redirect_to company_registrations_step_4_path
-    else
-      flash.now[:alert] = ErrorHandlerService.format_operation_errors(result)
-      render :step_3, status: :unprocessable_entity
-    end
+    # Criar uma chave temporária para identificar a empresa
+    session[:temp_company_id] = SecureRandom.uuid
+
+    Rails.logger.info("Dados da empresa armazenados na sessão: #{company_params.inspect}")
+
+    redirect_to company_registrations_step_4_path
   end
 
   # GET /company/registrations/step-4
@@ -129,7 +123,16 @@ class Company::RegistrationsController < ApplicationController
     # Pré-selecionar a cidade escolhida na etapa 1
     @selected_city_id = session[:office_city_id]
     Rails.logger.info("Iniciando step_4 - Dados da sessão: #{session.to_h.reject { |k, _| k.to_s.include?('password') }}")
-    Rails.logger.info("Company ID: #{session[:company_id]}, Company: #{@company&.inspect}")
+
+    # Neste ponto, possivelmente não teremos mais a empresa criada
+    if session[:company_id].present?
+      company = Company.find_by(id: session[:company_id])
+      Rails.logger.info("Company ID: #{session[:company_id]}, Company: #{company&.inspect}")
+    else
+      Rails.logger.info("Sem company_id na sessão - usando dados temporários da sessão")
+      Rails.logger.info("Company name: #{session[:company_name]}")
+      Rails.logger.info("Company temp_id: #{session[:temp_company_id]}")
+    end
   end
 
   # PATCH /company/registrations/complete
@@ -153,33 +156,74 @@ class Company::RegistrationsController < ApplicationController
     # Obter dados do administrador da sessão
     admin_params = SessionManagerService.get_admin_data(session)
 
+    # Obter dados da empresa da sessão
+    company_params = SessionManagerService.get_company_data(session)
+
     # Tentar limpar registros pendentes para este email
-    cleaned = clean_pending_records(admin_params[:email])
-    Rails.logger.info("Registros pendentes removidos: #{cleaned}") if cleaned
+    email = admin_params[:email]
+    cleaned = clean_pending_records(email)
+    Rails.logger.info("Registros pendentes removidos: #{cleaned} para email: #{email}")
 
     # Verificar se o email ainda está em uso após a limpeza
-    if Employee.exists?(email: admin_params[:email])
-      # Registro de debug para identificar o employee que está usando o email
-      existing_employee = Employee.find_by(email: admin_params[:email])
-      Rails.logger.debug("Email ainda em uso após limpeza: #{admin_params[:email]}")
-      Rails.logger.debug("Employee ID: #{existing_employee.id}")
-      Rails.logger.debug("Employee Company ID: #{existing_employee.company_id}")
-      Rails.logger.debug("Employee criado em: #{existing_employee.created_at}")
+    if Employee.exists?(email: email)
+      # Medida drástica: tentar remover qualquer registro com este email diretamente
+      Rails.logger.warn("Tentando medida drástica para remover employee com email: #{email}")
+      begin
+        # Executar SQL direto para garantir que o registro seja removido
+        employee_ids = Employee.where(email: email).pluck(:id)
 
+        if employee_ids.any?
+          Rails.logger.warn("Removendo diretamente employees com IDs: #{employee_ids.join(', ')}")
+
+          # Tentativa de remover via SQL direto em último caso
+          Employee.where(id: employee_ids).delete_all
+
+          # Verificar se a remoção foi bem-sucedida
+          still_exists = Employee.exists?(email: email)
+
+          if still_exists
+            # Se ainda existir, procurar por dependências que podem estar impedindo a remoção
+            existing_employee = Employee.find_by(email: email)
+            Rails.logger.error("Não foi possível remover employee ID: #{existing_employee.id}")
+            Rails.logger.error("Employee pertence à empresa ID: #{existing_employee.company_id}")
+
+            # Registrar detalhes adicionais para diagnóstico
+            company = Company.find_by(id: existing_employee.company_id)
+            if company
+              Rails.logger.error("Empresa existe? Sim. Onboarding completo? #{company.onboarding_completed}")
+              Rails.logger.error("Empresa tem #{company.employees.count} employees")
+            else
+              Rails.logger.error("Empresa não encontrada (possível registro órfão)")
+            end
+
+            # Informar o usuário sobre o problema
+            flash.now[:alert] = "Este email já está em uso e não foi possível liberá-lo. Por favor, utilize outro email ou entre em contato com o suporte."
+            @email_in_use = true
+            @current_email = email
+            @selected_city_id = session[:office_city_id]
+            render :step_4, status: :unprocessable_entity
+            return
+          end
+        end
+      rescue => e
+        Rails.logger.error("Erro ao tentar remover diretamente: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+      end
+    end
+
+    # Verificar novamente se o email está livre
+    if Employee.exists?(email: email)
       flash.now[:alert] = "Este email já está cadastrado. Por favor, utilize outro email."
-
-      # Permitir que o usuário edite o email na etapa 4
       @email_in_use = true
-      @current_email = admin_params[:email]
+      @current_email = email
       @selected_city_id = session[:office_city_id]
-
       render :step_4, status: :unprocessable_entity
       return
     end
 
-    # Finalizar o registro
+    # Finalizar o registro - criando a empresa, escritório e administrador em uma única transação
     result = CompanyRegistrationService.complete_registration(
-      session[:company_id],
+      company_params,
       office_params,
       admin_params
     )
@@ -198,7 +242,7 @@ class Company::RegistrationsController < ApplicationController
       ErrorHandlerService.log_errors(
         "Erro ao finalizar cadastro",
         result[:errors],
-        { company_id: session[:company_id], office_params: office_params }
+        { company_params: company_params, office_params: office_params }
       )
 
       # Verificar se é um erro de email duplicado
@@ -259,57 +303,98 @@ class Company::RegistrationsController < ApplicationController
     action_name.in?([ "step_3", "save_step_3", "step_4", "complete" ])
   end
 
-  # Carrega a empresa atual da sessão
-  def set_company
-    @company = Company.find_by(id: session[:company_id])
-
-    unless @company
-      redirect_to company_register_path, alert: "Sessão expirada. Por favor, inicie o cadastro novamente."
-    end
-  end
-
-  # Redireciona se a empresa já completou o cadastro
-  def redirect_if_completed
-    if @company&.onboarding_completed?
-      redirect_to "/company/login", notice: "Empresa já cadastrada. Por favor, faça login."
-    end
-  end
-
   # Limpa registros pendentes (incompletos) do email atual
   # @param [String] email Email a ser verificado
   def clean_pending_records(email)
-    # Encontrar employees pendentes com este email
-    pending_employees = Employee.joins(:company)
-                              .where(email: email)
-                              .where(companies: { onboarding_completed: false })
+    return false if email.blank?
 
-    if pending_employees.any?
-      Rails.logger.info("Removendo #{pending_employees.count} registros pendentes para o email: #{email}")
+    # Log para depuração
+    Rails.logger.info("Iniciando limpeza de registros para o email: #{email}")
 
-      # Remover employees pendentes e suas companies
-      pending_employees.each do |employee|
+    # Verificar diretamente se existe um employee com este email
+    employee_exists = Employee.exists?(email: email)
+    Rails.logger.info("Existe employee com este email? #{employee_exists}")
+
+    if employee_exists
+      # Encontrar todos os employees com este email, independente do status da empresa
+      employees = Employee.where(email: email)
+
+      Rails.logger.info("Encontrados #{employees.count} employees com este email")
+
+      # Para cada employee, remover ele e possivelmente sua empresa
+      employees.each do |employee|
         company_id = employee.company_id
-        Rails.logger.info("Removendo employee ID: #{employee.id} e company ID: #{company_id}")
+        company = Company.find_by(id: company_id)
+
+        # Log detalhado sobre o employee e sua empresa
+        Rails.logger.info("Employee ID: #{employee.id}, Company ID: #{company_id}")
+        Rails.logger.info("Empresa #{company_id} tem onboarding completo? #{company&.onboarding_completed}")
 
         # Remover em uma transação para garantir a consistência
         ActiveRecord::Base.transaction do
-          # Destruir o employee
-          employee.destroy
+          begin
+            # Verificar se há outros employees na mesma empresa
+            other_employees = company.employees.where.not(id: employee.id).count if company
 
-          # Verificar se a company existe e se não tem outros employees
-          company = Company.find_by(id: company_id)
-          if company && company.employees.count == 0
-            # Remover escritórios
-            company.offices.destroy_all
-            # Remover a company
-            company.destroy
+            # Remover o employee
+            if employee.destroy
+              Rails.logger.info("Employee #{employee.id} removido com sucesso")
+            else
+              Rails.logger.error("Falha ao remover employee #{employee.id}: #{employee.errors.full_messages.join(', ')}")
+            end
+
+            # Verificar se a empresa existe e se não tem outros employees
+            if company && (other_employees.nil? || other_employees == 0)
+              # Remover escritórios
+              if company.offices.any?
+                company.offices.destroy_all
+                Rails.logger.info("Escritórios da empresa #{company_id} removidos")
+              end
+
+              # Remover a empresa
+              if company.destroy
+                Rails.logger.info("Empresa #{company_id} removida com sucesso")
+              else
+                Rails.logger.error("Falha ao remover empresa #{company_id}: #{company.errors.full_messages.join(', ')}")
+              end
+            else
+              Rails.logger.info("Empresa #{company_id} não será removida pois tem outros #{other_employees} employees")
+            end
+          rescue => e
+            Rails.logger.error("Erro durante limpeza: #{e.message}")
+            Rails.logger.error(e.backtrace.join("\n"))
+            raise ActiveRecord::Rollback
           end
         end
       end
 
-      return true
+      # Verificar se a limpeza foi eficaz
+      still_exists = Employee.exists?(email: email)
+      Rails.logger.info("Após limpeza, ainda existe employee com este email? #{still_exists}")
+
+      return !still_exists
     end
 
     false
+  end
+
+  # Redireciona se a empresa já completou o cadastro
+  def redirect_if_completed
+    # Verificar se o email já foi registrado em uma empresa com onboarding completo
+    email = session[:employee_email]
+
+    if email.present?
+      existing_employee = Employee.joins(:company)
+                               .where(email: email)
+                               .where(companies: { onboarding_completed: true })
+                               .first
+
+      if existing_employee
+        Rails.logger.info("Email #{email} já está registrado em empresa com onboarding completo")
+        company = existing_employee.company
+        redirect_to "/company/login", notice: "Você já possui uma conta registrada. Por favor, faça login."
+        nil
+      end
+    end
   end
 end
